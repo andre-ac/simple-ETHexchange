@@ -19,3 +19,9 @@ app.config["DEBUG"] = True
 @app.route('/', methods=['GET'])
 def home():
     return render_template("home.html")
+
+@app.route('/apitest', methods=['GET'])
+def api():
+    test = time.time()
+    testreturn = [{'time':test,'name':'Andre'}, {'time':test,'name':'Tobias'}]
+    return jsonify(testreturn)
