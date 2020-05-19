@@ -20,7 +20,7 @@ app.config["DEBUG"] = True
 def home():
     return render_template("home.html")
 
-@app.route('/apitest', methods=['GET'])
+@app.route('/ap/itest', methods=['GET'])
 def api():
     test = time.time()
     testreturn = [{'time':test,'name':'Andre'}, {'time':test,'name':'Tobias'}]
