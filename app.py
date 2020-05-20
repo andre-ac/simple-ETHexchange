@@ -10,10 +10,11 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+from helper import login_required, usd, timeformater
 
 
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True
+FLASK_DEBUG=1
 
 
 @app.route('/', methods=['GET'])
@@ -25,3 +26,6 @@ def api():
     test = time.time()
     testreturn = [{'time':test,'name':'Andre'}, {'time':test,'name':'Tobias'}]
     return jsonify(testreturn)
+
+if __name__ == "__main__":
+    app.run(debug=True, use_reloader=False)
