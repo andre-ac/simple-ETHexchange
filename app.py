@@ -18,6 +18,17 @@ app = flask.Flask(__name__)
 app.secret_key = os.urandom(24)
 FLASK_DEBUG=1
 
+# Ensure templates are auto-reloaded
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+# Ensure responses aren't cached
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
 db = SQL('sqlite:///DB.db')
 
 @app.route('/', methods=['GET'])
@@ -29,17 +40,17 @@ def login():
     """Login user"""
     if request.method == "POST":
         if not request.form.get("username"):
-            return render_template("login.html",error="must provide username")
+            return render_template("login.html",alert_error="must provide username")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("login.html",error="must provide username")
+            return render_template("login.html",alert_error="must provide username")
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = :username", username=request.form.get("username"))
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["password_hash"], request.form.get("password")):
-            return render_template("login.html",error="invalid username or password")
+            return render_template("login.html",alert_error="invalid username or password")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["user_id"]
@@ -67,15 +78,15 @@ def register():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return render_template("register.html",error="must provide username")
+            return render_template("register.html",alert_error="must provide username")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("register.html",error="must provide password")
+            return render_template("register.html",alert_error="must provide password")
 
         # Check if password and password confirmation match
         elif request.form.get("password")!=request.form.get("confirmation"):
-            return render_template("register.html",error="passwords must match")
+            return render_template("register.html",alert_error="passwords must match")
 
         # get number of users with same username
         rows = db.execute("SELECT * FROM users WHERE username = :username", username=request.form.get("username"))
@@ -91,7 +102,7 @@ def register():
             session['logged_in'] = True
             return redirect("/")
         else:
-            return render_template("register.html",error="username already taken")
+            return render_template("register.html",alert_error="username already taken")
     else:
         return render_template("register.html")
 
