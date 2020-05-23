@@ -29,11 +29,20 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
+# Custom filter
+app.jinja_env.filters["usd"] = usd
+app.jinja_env.filters["timeformater"] = timeformater
+
 db = SQL('sqlite:///DB.db')
 
 @app.route('/', methods=['GET'])
 def home():
     return render_template("home.html")
+
+@app.route("/trade")
+def trade():
+    """Trading Interface"""
+    return render_template("trade.html")
 
 @app.route("/login", methods=["GET","POST"])
 def login():
