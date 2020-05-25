@@ -2,22 +2,48 @@
 
 
 {% block main %}
-<h3 style="text-align: center;" >Trade</h3>
+<h3 style="text-align: center; margin-top: 2%;" >Trade</h3>
 <div class="container">
   
   <div class="row">
     
     <div class="col">
-      <table class="table table-sm table-dark">
-        <tr>
+      <table class="table table-sm">
+        <thead>
+        <tr style="color: ivory;">
             <th colspan="2" class="bg-success">Bid</th>
             <th colspan="2" class="bg-danger">Ask</th>
         </tr>
+        <tr class="bg-dark" style="color: ivory;"><b>
+          <td>Size</td>
+          <td>Price</td>
+          <td>Price</td>
+          <td>Size</td></b>
+        </tr>
+      </thead>
         <tr>
-            <td>Size</td>
-            <td>Price</td>
-            <td>Price</td>
-            <td>Size</td>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
+        </tr>
+        <tr>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
+        </tr>
+        <tr>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
+        </tr>
+        <tr>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
+          <td>---</td>
         </tr>
       </table>
     </div>
@@ -26,8 +52,11 @@
       
     </div>
 
-    <div class="col">
-      
+    <div class="col" style="line-height: 100%;">
+      <h5>Quantity</h5>
+      <input type="number" style="height:30px;width: 50%; float:right;" id="quantity" placeholder="Quantity" name="quantity" min="1" max="5">
+      <h5>Price</h5>
+      <input type="number" style="height:30px;width: 50%;float:right;" id="price" placeholder="Price" name="price" min="0" max="999">
     </div>
 
   </div>

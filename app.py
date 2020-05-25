@@ -16,6 +16,7 @@ from helper import login_required, usd, timeformater
 
 app = flask.Flask(__name__)
 app.secret_key = os.urandom(24)
+app.config['SECRET_KEY'] = app.secret_key
 FLASK_DEBUG=1
 
 # Ensure templates are auto-reloaded
@@ -40,6 +41,7 @@ def home():
     return render_template("home.html")
 
 @app.route("/trade")
+@login_required
 def trade():
     """Trading Interface"""
     return render_template("trade.html")
@@ -115,11 +117,62 @@ def register():
     else:
         return render_template("register.html")
 
-@app.route('/ap/itest', methods=['GET'])
-def api():
-    test = time.time()
-    testreturn = [{'time':test,'name':'Andre'}, {'time':test,'name':'Tobias'}]
-    return jsonify(testreturn)
+@app.route('/api/sendorder', methods=['POST',"DELETE"])
+@login_required
+def sendorder():
+    if request.method == "POST":
+
+        time_requested = time.time()
+        db.execute("SELECT * FROM users")
+        return jsonify(result = "success", time = time_requested), 201
+
+    elif request.method == "DELETE":
+        time_requested = time.time()
+        testreturn = db.execute("SELECT * FROM users")
+        return jsonify(testreturn), 200
+    else:
+        return 405
+
+@app.route('/api/userinfo', methods=["GET"])
+@login_required
+def userinfo():
+    if request.method == "GET":
+        time_requested = time.time()
+        basic_userinfo = db.execute("SELECT eth_balance,usd_balance,username FROM users WHERE user_id = :id", id= session["user_id"])[0]
+        basic_withtime = basic_userinfo.update(time = time_requested)
+        return jsonify(basic_userinfo), 200
+    else:
+        return 405
+        
+@app.route('/api/orderhistory', methods=["GET"])
+@login_required
+def orderhistory():
+    if request.method == "GET":
+        time_requested = time.time()
+        testreturn = db.execute("SELECT * FROM users")
+        return jsonify(testreturn), 200
+    else:
+        return 405
+
+@app.route('/api/tradehistory', methods=["GET"])
+@login_required
+def tradehistory():
+    if request.method == "GET":
+        time_requested = time.time()
+        testreturn = db.execute("SELECT * FROM users")
+        return jsonify(testreturn), 200
+    else:
+        return "error ", 405
+
+@app.route('/api/openorders', methods=['POST',"DELETE"])
+@login_required
+def openorders():
+    if request.method == "GET":
+        time_requested = time.time()
+        testreturn = db.execute("SELECT * FROM users")
+        return jsonify(testreturn), 200
+    else:
+        return "error ", 405
 
 if __name__ == "__main__":
     app.run(debug=False, use_reloader=False)
