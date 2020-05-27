@@ -121,10 +121,14 @@ def register():
 @login_required
 def sendorder():
     if request.method == "POST":
-
-        time_requested = time.time()
-        db.execute("SELECT * FROM users")
-        return jsonify(result = "success", time = time_requested), 201
+        new_order_id = str(uuid.uuid4())
+        pair = request.form.get("pair")
+        price = request.form.get("price")
+        quantity = request.form.get("quantity")
+        filled = 0
+        time_requested = int(time.time())
+        db.execute("INSERT INTO open_orders (order_id,user_id,pair,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?)", new_order_id, session["user_id"], pair, price, quantity, filled, time_requested)
+        return jsonify(result = "success", time = time_requested, pair = pair , price = price, quantity = quantity), 201
 
     elif request.method == "DELETE":
         time_requested = time.time()
@@ -139,7 +143,7 @@ def userinfo():
     if request.method == "GET":
         time_requested = time.time()
         basic_userinfo = db.execute("SELECT eth_balance,usd_balance,username FROM users WHERE user_id = :id", id= session["user_id"])[0]
-        basic_withtime = basic_userinfo.update(time = time_requested)
+        basic_userinfo.update(time = time_requested)
         return jsonify(basic_userinfo), 200
     else:
         return 405

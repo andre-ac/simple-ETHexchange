@@ -3,6 +3,8 @@ console.log("script.js loaded")
 window.onload = function(){
   var user_navbar_eth_balance = document.getElementById("user_navbar_eth_balance");
   var user_navbar_usd_balance = document.getElementById("user_navbar_eth_balance");
+  var quantityfield = document.getElementById("quantityfield");
+  var pricefield = document.getElementById("pricefield");
 }
 
 
@@ -15,6 +17,7 @@ $.get("/api/userinfo",function(data,status){
     });
 };
 
+
 $(document).ready(function(){
   $("#alert_error").fadeToggle(3000);
 });
@@ -25,10 +28,27 @@ $(document).ready(function(){
   if($("#user_navbar_eth_balance").is(":visible")){
   setInterval(function(){
     get_userdata()
-  }, 1000);}
+  }, 10000);}
 
   else {
     console.log("not logged in")
   }
 
+
+});
+
+//BUY
+$(document).ready(function(){
+  $("#buttonbuy").click(function(){
+    console.log("clicked 1")
+    $.post("/api/sendorder",
+    {
+      pair: "ETHUSD",
+      price: pricefield.value,
+      quantity: quantityfield.value
+    },
+    function(data, status){
+      console.log("Data: " + data + "\nStatus: " + status);
+    });
+  });
 });
