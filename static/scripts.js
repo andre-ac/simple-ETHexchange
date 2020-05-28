@@ -28,7 +28,7 @@ $(document).ready(function(){
   if($("#user_navbar_eth_balance").is(":visible")){
   setInterval(function(){
     get_userdata()
-  }, 10000);}
+  }, 1000);}
 
   else {
     console.log("not logged in")
@@ -37,15 +37,40 @@ $(document).ready(function(){
 
 });
 
-//BUY
+//BUY and SELL when clicking the buttons
 $(document).ready(function(){
   $("#buttonbuy").click(function(){
+
+    console.log("clicked 1")
+
+    //check if price has a decimal precision of 0.1 and if the quantity is a whole number and if both are > 0   && Number.isInteger(pricefield.value%0.1) ==true   && Number.isInteger(quantityfield.value) == true
+    if (pricefield.value > 0 && quantityfield.value > 0){
+      $.post("/api/sendorder",
+      {
+        pair: "ETHUSD",
+        price: pricefield.value,
+        quantity: quantityfield.value,
+        type: "B",
+        ordertype: "L"
+      },function(data, status){
+          console.log("Data: " + data + "\nStatus: " + status);
+        });
+    }
+    else{
+      alert("Invalid fields")
+    }
+
+});
+
+  $("#buttonsell").click(function(){
     console.log("clicked 1")
     $.post("/api/sendorder",
     {
       pair: "ETHUSD",
       price: pricefield.value,
-      quantity: quantityfield.value
+      quantity: quantityfield.value,
+      type: "S",
+      ordertype: "L"
     },
     function(data, status){
       console.log("Data: " + data + "\nStatus: " + status);

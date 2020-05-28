@@ -125,9 +125,11 @@ def sendorder():
         pair = request.form.get("pair")
         price = request.form.get("price")
         quantity = request.form.get("quantity")
+        type = request.form.get("type")
+        ordertype = request.form.get("ordertype")
         filled = 0
         time_requested = int(time.time())
-        db.execute("INSERT INTO open_orders (order_id,user_id,pair,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?)", new_order_id, session["user_id"], pair, price, quantity, filled, time_requested)
+        db.execute("INSERT INTO open_orders (order_id,user_id,pair,type,ordertype,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?,?,?)", new_order_id, session["user_id"], pair, type, ordertype, price, quantity, filled, time_requested)
         return jsonify(result = "success", time = time_requested, pair = pair , price = price, quantity = quantity), 201
 
     elif request.method == "DELETE":
