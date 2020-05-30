@@ -170,13 +170,13 @@ def tradehistory():
     else:
         return "error ", 405
 
-@app.route('/api/openorders', methods=['POST',"DELETE"])
+@app.route('/api/openorders', methods=["GET"])
 @login_required
 def openorders():
     if request.method == "GET":
         time_requested = time.time()
-        testreturn = db.execute("SELECT * FROM users")
-        return jsonify(testreturn), 200
+        ordersopen = db.execute("SELECT order_id, pair, type, ordertype, price, quantity, filled, time FROM open_orders WHERE user_id = :user", user=session["user_id"])
+        return jsonify(ordersopen, time_requested), 200
     else:
         return "error ", 405
 

@@ -8,44 +8,7 @@
   <div class="row">
     
     <div class="col">
-      <table class="table table-sm">
-        <thead>
-        <tr style="color: ivory;">
-            <th colspan="2" class="bg-success">Bid</th>
-            <th colspan="2" class="bg-danger">Ask</th>
-        </tr>
-        <tr class="bg-dark" style="color: ivory;"><b>
-          <td>Size</td>
-          <td>Price</td>
-          <td>Price</td>
-          <td>Size</td></b>
-        </tr>
-      </thead>
-        <tr>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-        </tr>
-        <tr>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-        </tr>
-        <tr>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-        </tr>
-        <tr>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-          <td>---</td>
-        </tr>
-      </table>
+      <button type="button" id="getopenorders" class="btn btn-dark">Get open orders</button>
     </div>
 
     <div class="col">
@@ -60,10 +23,60 @@
       
       <button type="button" id="buttonbuy" class="btn btn-success">Buy</button>
       <button type="button" id="buttonsell" class="btn btn-danger">Sell</button>
+
+      <table class="table table-sm" style="margin-top: 10px; text-align: center; border-collapse: collapse;">
+        <thead>
+        <tr style="color: ivory;">
+            <th colspan="2" class="bg-success">Bid</th>
+            <th colspan="2" class="bg-danger">Ask</th>
+        </tr>
+        <tr class="bg-dark" style="color: ivory;"><b>
+          <td>Size</td>
+          <td>Price</td>
+          <td>Price</td>
+          <td>Size</td></b>
+        </tr>
+      </thead>
+        <tr>
+          <td>---</td>
+          <td style="border-right: 1px solid;">---</td>
+          <td>---</td>
+          <td>---</td>
+        </tr>
+        <tr>
+          <td>---</td>
+          <td style="border-right: 1px solid;">---</td>
+          <td>---</td>
+          <td>---</td>
+        </tr>
+        <tr>
+          <td>---</td>
+          <td style="border-right: 1px solid;">---</td>
+          <td>---</td>
+          <td>---</td>
+        </tr>
+        <tr>
+          <td>---</td>
+          <td style="border-right: 1px solid;">---</td>
+          <td>---</td>
+          <td>---</td>
+        </tr>
+      </table>
   </div>
     
 
   </div>
-
+<table class="table table-sm">
+        <thead>
+        <tr class="bg-dark" style="color: ivory;"><b>
+          <td>Type</td>
+          <td>Order Type</td>
+          <td>Price</td>
+          <td>Size</td>
+          <td>Filled</td>
+          <td>Time</td></b>
+        </tr>
+      </thead>
+      </table>
 </div>
 {% endblock %}

@@ -17,6 +17,12 @@ $.get("/api/userinfo",function(data,status){
     });
 };
 
+function get_openorders(){
+$.get("/api/openorders",function(data,status){
+      console.log(data)
+      });
+  };
+
 
 $(document).ready(function(){
   $("#alert_error").fadeToggle(3000);
