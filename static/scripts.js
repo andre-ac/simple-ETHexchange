@@ -19,7 +19,33 @@ $.get("/api/userinfo",function(data,status){
 
 function get_openorders(){
 $.get("/api/openorders",function(data,status){
-      console.log(data)
+    openorders = data[0]
+    console.log(openorders)
+    console.log(openorders.length)
+
+    var openorder_table = document.getElementById("openorder_table");
+
+    for (let index = 0; index < openorders.length; index++) {
+      const element = openorders[index];
+      console.log(index + " order is " + element + " id is " + element.order_id)
+      const row = openorder_table.insertRow(1)
+      
+      if (element.type == "B") {
+        row.style.backgroundColor = "#d6f5d6";
+        row.insertCell(0).innerHTML = "Buy";
+      }else {
+        row.style.backgroundColor = "#ffb3b3";
+        row.insertCell(0).innerHTML = "Sell";
+      }
+      if (element.ordertype) {
+        row.insertCell(1).innerHTML = "Limit";
+      }
+
+      row.insertCell(2).innerHTML = element.price
+      row.insertCell(3).innerHTML = element.quantity
+      row.insertCell(4).innerHTML = element.filled
+      row.insertCell(5).innerHTML = element.time
+    }
       });
   };
 
@@ -39,8 +65,12 @@ $(document).ready(function(){
   else {
     console.log("not logged in")
   }
+});
 
-
+$(document).ready(function(){
+  $("#getopenorders").click(function(){
+    get_openorders()
+  });
 });
 
 //BUY and SELL when clicking the buttons
