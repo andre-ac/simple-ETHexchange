@@ -24,12 +24,17 @@ $.get("/api/openorders",function(data,status){
     console.log(openorders.length)
 
     var openorder_table = document.getElementById("openorder_table");
-
+    console.log("num of rows " + openorder_table.rows.length)
+    
+    while (openorder_table.rows.length>1) {
+      openorder_table.deleteRow(1);
+    }
+    
+    $("tr.openorder_table:not(:first)").remove();
+    
     for (let index = 0; index < openorders.length; index++) {
       const element = openorders[index];
-      console.log(index + " order is " + element + " id is " + element.order_id)
       const row = openorder_table.insertRow(1)
-      
       if (element.type == "B") {
         row.style.backgroundColor = "#d6f5d6";
         row.insertCell(0).innerHTML = "Buy";
