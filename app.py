@@ -131,10 +131,12 @@ def sendorder():
         time_requested = int(time.time())
         db.execute("INSERT INTO open_orders (order_id,user_id,pair,type,ordertype,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?,?,?)", new_order_id, session["user_id"], pair, type, ordertype, price, quantity, filled, time_requested)
         return jsonify(result = "success", time = time_requested, pair = pair , price = price, quantity = quantity), 201
+    
     elif request.method == "DELETE":
         orderid = request.form.get("order_id")
-        db.execute("SELECT * FROM users")
-        return jsonify(testreturn), 200
+        db.execute("DELETE FROM open_orders WHERE order_id = :orderid", orderid = orderid)
+        return jsonify("Deleted"), 200
+    
     else:
         return 405
 

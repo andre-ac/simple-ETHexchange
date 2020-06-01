@@ -69,13 +69,11 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
-
   //makes sure get_userdata is only being requested when user is logged in (the balances in the nav is being shown)
   if($("#user_navbar_eth_balance").is(":visible")){
   setInterval(function(){
     get_userdata()
   }, 2000);}
-
   else {
     console.log("not logged in")
   }
@@ -90,11 +88,8 @@ $(document).ready(function(){
 //BUY and SELL when clicking the buttons
 $(document).ready(function(){
   $("#buttonbuy").click(function(){
-
-    console.log("clicked 1")
-
     //check if price has a decimal precision of 0.1 and if the quantity is a whole number and if both are > 0
-    if (pricefield.value > 0 && quantityfield.value > 0 && quantityfield.value % 1 == 0 && pricefield.value * 100 % 10 == 0){
+    if (pricefield.value > 0 && quantityfield.value > 0 && quantityfield.value * 1000 % 10 == 0 && pricefield.value * 100 % 10 == 0){
       $.post("/api/sendorder",
       {
         pair: "ETHUSD",
@@ -106,6 +101,7 @@ $(document).ready(function(){
           console.log("Data: " + data + "\nStatus: " + status);
           console.log(pricefield.value + " " + pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
         });
+        setTimeout(get_openorders,100)
     }
     else{
       console.log(pricefield.value + " "+ pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
@@ -127,9 +123,17 @@ $(document).ready(function(){
     function(data, status){
       console.log("Data: " + data + "\nStatus: " + status);
     });
+    setTimeout(get_openorders,100)
   });
 });
 
 function orderdeleteclick(order_id){
-  console.log("Cancel clicked for " + order_id)
-}
+  $.ajax({
+    url: 'api/sendorder',
+    type: 'DELETE',
+    data: {
+      order_id: order_id
+    }
+    });
+    setTimeout(get_openorders,100)
+  };
