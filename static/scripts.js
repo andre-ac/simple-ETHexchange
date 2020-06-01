@@ -30,16 +30,17 @@ $.get("/api/openorders",function(data,status){
       openorder_table.deleteRow(1);
     }
     
-    $("tr.openorder_table:not(:first)").remove();
-    
+    let timenow = Math.round( Date.now() / 1000)
+
     for (let index = 0; index < openorders.length; index++) {
+      
       const element = openorders[index];
       const row = openorder_table.insertRow(1)
       if (element.type == "B") {
-        row.style.backgroundColor = "#d6f5d6";
+        row.style.backgroundColor = "#ebffeb";
         row.insertCell(0).innerHTML = "Buy";
       }else {
-        row.style.backgroundColor = "#ffb3b3";
+        row.style.backgroundColor = "#ffd6d6";
         row.insertCell(0).innerHTML = "Sell";
       }
       if (element.ordertype) {
@@ -49,9 +50,17 @@ $.get("/api/openorders",function(data,status){
       row.insertCell(2).innerHTML = element.price
       row.insertCell(3).innerHTML = element.quantity
       row.insertCell(4).innerHTML = element.filled
-      row.insertCell(5).innerHTML = element.time
+      
+      if ((timenow-element.time) < 3600) {
+        row.insertCell(5).innerHTML = moment.unix(element.time).fromNow();
+      } else {
+        row.insertCell(5).innerHTML = moment.unix(element.time).format('DD, MMM - kk:mm:ss');
+      }
+          
+      const cancel_row = row.insertCell(6)
+      $(cancel_row).html('<div style="position: fixed ; "><button type="button" id="'+ element.order_id + '" class="close text-danger rounded-circle border-white" aria-label="Close" onclick="orderdeleteclick(this.id)"><span aria-hidden="true">&times;</span></button></div>');
     }
-      });
+    });
   };
 
 
@@ -120,3 +129,7 @@ $(document).ready(function(){
     });
   });
 });
+
+function orderdeleteclick(order_id){
+  console.log("Cancel clicked for " + order_id)
+}
