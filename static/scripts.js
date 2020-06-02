@@ -83,6 +83,8 @@ $(document).ready(function(){
   $("#getopenorders").click(function(){
     get_openorders()
   });
+  if($("#buttonbuy").is(":visible")){
+      get_openorders()};
 });
 
 //BUY and SELL when clicking the buttons

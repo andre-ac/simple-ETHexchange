@@ -46,6 +46,12 @@ def trade():
     """Trading Interface"""
     return render_template("trade.html")
 
+@app.route('/history', methods=["GET"])
+@login_required
+def history():
+    history = db.execute("SELECT * FROM order_history WHERE user_id = :id", id=session["user_id"])
+    return render_template("history.html", history=history)
+
 @app.route("/login", methods=["GET","POST"])
 def login():
     """Login user"""
