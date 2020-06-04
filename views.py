@@ -12,6 +12,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from helper import login_required, usd, timeformater
+from engine import orderbook_sync
 from app import app
 
 db = SQL('sqlite:///DB.db')
@@ -52,7 +53,7 @@ def login():
         # Remember which user has logged in
         session["user_id"] = rows[0]["user_id"]
         session['logged_in'] = True
-
+        orderbook_sync()
         # Redirect user to home page
         return redirect("/")
     else:

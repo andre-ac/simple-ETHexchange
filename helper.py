@@ -3,6 +3,7 @@ import requests
 import urllib.parse
 import time, datetime
 
+
 from flask import redirect, render_template, request, session
 from functools import wraps
 
@@ -28,3 +29,4 @@ def usd(value):
 def timeformater(time):
     """Turn unix time to date format"""
     return datetime.datetime.utcfromtimestamp(time)
+

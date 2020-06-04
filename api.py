@@ -12,6 +12,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from helper import login_required, usd, timeformater
+from engine import *
 from app import app
 
 db = SQL('sqlite:///DB.db')
@@ -64,7 +65,7 @@ def orderhistory():
 def tradehistory():
     if request.method == "GET":
         tradehistory = db.execute("SELECT * FROM trade_history WHERE user_id = :id", id= session["user_id"])
-        return jsonify(orderhistory), 200
+        return jsonify(tradehistory), 200
     else:
         return "error ", 405
 
@@ -75,5 +76,13 @@ def openorders():
         time_requested = time.time()
         ordersopen = db.execute("SELECT order_id, pair, type, ordertype, price, quantity, filled, time FROM open_orders WHERE user_id = :user", user=session["user_id"])
         return jsonify(ordersopen, time_requested), 200
+    else:
+        return "error ", 405
+
+@app.route('/api/orderbook', methods=["GET"])
+def orderbook():
+    if request.method == "GET":
+        orderbook = db.execute("SELECT * FROM orderbook")
+        return jsonify(orderbook), 200
     else:
         return "error ", 405
