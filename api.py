@@ -28,7 +28,7 @@ def sendorder():
         type = request.form.get("type")
         ordertype = request.form.get("ordertype")
         filled = 0
-        time_quested = int(time.time())
+        time_requested = int(time.time())
         db.execute("INSERT INTO open_orders (order_id,user_id,pair,type,ordertype,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?,?,?)", new_order_id, session["user_id"], pair, type, ordertype, price, quantity, filled, time_requested)
         add_order_orderbook(new_order_id)
         return jsonify(result = "success", time = time_requested, pair = pair , price = price, quantity = quantity), 201

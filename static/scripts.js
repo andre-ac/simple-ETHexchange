@@ -17,6 +17,45 @@ $.get("/api/userinfo",function(data,status){
     });
 };
 
+function get_orderbook(){
+$.get("/api/orderbook",function(data,status){
+  var data_array = data
+  data_array.sort(function(a, b){return a.price - b.price});
+  var data_array_reverse = data_array.reverse()
+  var bid = []
+  var ask = []
+
+  for (var i in data_array) {
+    const element = data_array[i]
+    const element_rev = data_array_reverse[i]
+
+    if (element.type == "B"){
+      bid.push(element.price,element.quantity)
+    }
+    else{
+      ask.push(element_rev.price,element_rev.quantity)
+    }
+  };
+  document.getElementById("bid1-price").innerHTML = bid[0]
+  document.getElementById("bid1-size").innerHTML = bid[1]
+  document.getElementById("bid2-price").innerHTML = bid[2]
+  document.getElementById("bid2-size").innerHTML = bid[3]
+  document.getElementById("bid3-price").innerHTML = bid[4]
+  document.getElementById("bid3-size").innerHTML = bid[5]
+  document.getElementById("bid4-price").innerHTML = bid[6]
+  document.getElementById("bid4-size").innerHTML = bid[7]
+
+  document.getElementById("ask1-price").innerHTML = ask[0]
+  document.getElementById("ask1-size").innerHTML = ask[1]
+  document.getElementById("ask2-price").innerHTML = ask[2]
+  document.getElementById("ask2-size").innerHTML = ask[3]
+  document.getElementById("ask3-price").innerHTML = ask[4]
+  document.getElementById("ask3-size").innerHTML = ask[5]
+  document.getElementById("ask4-price").innerHTML = ask[6]
+  document.getElementById("ask4-size").innerHTML = ask[7]
+});
+};
+
 function get_openorders(){
 $.get("/api/openorders",function(data,status){
     openorders = data[0]
@@ -24,7 +63,7 @@ $.get("/api/openorders",function(data,status){
     console.log(openorders.length)
 
     var openorder_table = document.getElementById("openorder_table");
-    console.log("num of rows " + openorder_table.rows.length)
+    console.log("nuem of rows " + openorder_table.rows.length)
     
     while (openorder_table.rows.length>1) {
       openorder_table.deleteRow(1);
@@ -58,7 +97,7 @@ $.get("/api/openorders",function(data,status){
       }
           
       const cancel_row = row.insertCell(6)
-      $(cancel_row).html('<div style="position: fixed ; "><button type="button" id="'+ element.order_id + '" class="close text-danger rounded-circle border-white" aria-label="Close" onclick="orderdeleteclick(this.id)"><span aria-hidden="true">&times;</span></button></div>');
+      $(cancel_row).html('<div><button type="button" id="'+ element.order_id + '" class="close text-danger rounded-circle border-white" aria-label="Close" onclick="orderdeleteclick(this.id)"><span aria-hidden="true">&times;</span></button></div>');
     }
     });
   };
@@ -82,6 +121,7 @@ $(document).ready(function(){
 $(document).ready(function(){
   $("#getopenorders").click(function(){
     get_openorders()
+    get_orderbook()
   });
   if($("#buttonbuy").is(":visible")){
       get_openorders()};
