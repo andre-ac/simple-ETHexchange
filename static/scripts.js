@@ -19,23 +19,29 @@ $.get("/api/userinfo",function(data,status){
 
 function get_orderbook(){
 $.get("/api/orderbook",function(data,status){
-  var data_array = data
-  data_array.sort(function(a, b){return a.price - b.price});
-  var data_array_reverse = data_array.reverse()
+  var data_array = Array.from(data)
+  data.sort(function(a, b){return a.price - b.price});
+  data_array.sort(function(a, b){return b.price - a.price});
+
   var bid = []
   var ask = []
 
+
   for (var i in data_array) {
-    const element = data_array[i]
-    const element_rev = data_array_reverse[i]
+    const element_rev = data_array[i]
+    const element = data[i]
+
 
     if (element.type == "B"){
-      bid.push(element.price,element.quantity)
+      bid.push(element_rev.price,element_rev.quantity)
     }
     else{
-      ask.push(element_rev.price,element_rev.quantity)
+      ask.push(element.price,element.quantity)
     }
   };
+console.log("Reversed "+ bid)
+console.log("Sorted " + ask)
+
   document.getElementById("bid1-price").innerHTML = bid[0]
   document.getElementById("bid1-size").innerHTML = bid[1]
   document.getElementById("bid2-price").innerHTML = bid[2]

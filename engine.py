@@ -39,11 +39,18 @@ def add_order_orderbook(new_order_id):
 
 
 def orderbook_sync():
-    """ Syncs orderbook DB """
-    open_orders = db.execute("SELECT * FROM open_orders WHERE user_id = :user", user=session["user_id"])
-    hidden_orderbook = db.execute("SELECT * FROM hidden_orderbook WHERE user_id = :user", user=session["user_id"])
+    """ Syncs both orderbook DB with all user's open orders"""
+
+    open_orders = db.execute("SELECT * FROM open_orders")
+    hidden_orderbook = db.execute("SELECT * FROM hidden_orderbook")
     
+    #db.execute("DELETE FROM orderbook") 
+
+    #pass to orderbook
+
     list_order_ids = []
+    list_prices = []
+
     for openorders in hidden_orderbook:
       list_order_ids.append(openorders["order_id"])
 
@@ -55,4 +62,19 @@ def orderbook_sync():
 
       else:
         print(f"{orderid} not here, adding it")
-        db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)", order["pair"], order["price"], order["quantity"]-order["filled"], order["order_id"],order["time"],order["type"], session["user_id"])
+        db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)", order["pair"], order["price"], order["quantity"]-order["filled"], order["order_id"],order["time"],order["type"], order["user_id"])
+    
+    for openorders in hidden_orderbook:
+      list_order_ids.append(openorders["order_id"])
+
+      if openorders["price"] in list_prices:
+        pass
+      else:
+        list_prices.append(openorders["price"])
+
+    print(list_prices)
+
+
+if __name__ == "__main__":
+    orderbook_sync()
+    print("Orderbook Synced")
