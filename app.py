@@ -34,7 +34,7 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
-# Custom filter
+# Custom filters
 app.jinja_env.filters["usd"] = usd
 app.jinja_env.filters["timeformater"] = timeformater
 

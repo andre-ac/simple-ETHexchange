@@ -36,6 +36,20 @@ def add_order_orderbook(new_order_id):
       print(order["order_id"] + " MATCHED")
       # if the price is the same and type is different then it means that someone is buying/selling for our desired price
 
+def del_order_orderbook(order_id):
+  """ Deletes order to both orderbooks (hidden and visible) """
+
+  order = db.execute("SELECT * FROM open_orders WHERE order_id = :order_id", order_id = order_id)[0]
+  db.execute("DELETE FROM hidden_orderbook WHERE order_id = :order_id", order_id = order_id )
+
+  orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price = :price AND type= :type", price=order["price"], type=order["type"])[0]
+  quantity_left = order["quantity"]-order["filled"]
+  
+  if quantity_left < orderbook_for_price["quantity"]:
+    db.execute("UPDATE orderbook SET quantity = :quantity WHERE pair = :pair AND price = :price AND type = :type", quantity = orderbook_for_price["quantity"]-quantity_left, pair = order["pair"], price = order["price"], type = order["type"] )
+  else:
+    db.execute("DELETE FROM orderbook WHERE price=:price", price=order["price"])
+
 
 
 def orderbook_sync():

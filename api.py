@@ -35,6 +35,7 @@ def sendorder():
     
     elif request.method == "DELETE":
         orderid = request.form.get("order_id")
+        del_order_orderbook(orderid)
         db.execute("DELETE FROM open_orders WHERE order_id = :orderid", orderid = orderid)
         return jsonify("Deleted"), 200
     
