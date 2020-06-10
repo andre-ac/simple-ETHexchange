@@ -76,7 +76,7 @@ def orderbook_sync():
       # get order ids available in the hidden orderbook before sync
       list_order_ids_on_openorder.append(orderid)
       quantity_left = order["quantity"]-order["filled"]
-      hidden_order = db.execute("SELECT * FROM hidden_orderbook WHERE order_id = :orderid", orderid= orderid)[0]
+      
 
       if orderid in list_order_ids_on_hidden:
         print(f"{orderid} already there")
@@ -84,7 +84,8 @@ def orderbook_sync():
       else:
         print(f"{orderid} not here, adding it")
         db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)", order["pair"], order["price"], order["quantity"]-order["filled"], order["order_id"],order["time"],order["type"], order["user_id"])
-    
+
+      hidden_order = db.execute("SELECT * FROM hidden_orderbook WHERE order_id = :orderid", orderid= orderid)[0]
       if quantity_left != hidden_order["quantity_left"]:
         db.execute("UPDATE hidden_orderbook SET quantity = :quantity", quantity = quantity_left)
         print(f"{orderid} had wrong quantity in hidden, updated")
