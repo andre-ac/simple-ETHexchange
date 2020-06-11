@@ -77,7 +77,6 @@ def orderbook_sync():
       list_order_ids_on_openorder.append(orderid)
       quantity_left = order["quantity"]-order["filled"]
       
-
       if orderid in list_order_ids_on_hidden:
         print(f"{orderid} already there")
 
@@ -91,9 +90,9 @@ def orderbook_sync():
         print(f"{orderid} had wrong quantity in hidden, updated")
       else:
         print(f"{orderid} quantity was correct")
-      
 
 
+    # check if all orders in hidden are also in openorders
     for order in hidden_orderbook:
       orderid = order["order_id"]
 
@@ -103,6 +102,8 @@ def orderbook_sync():
         print(f"{orderid} was in hidden but not in open, deleted from hidden")
         db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid", orderid = orderid)
 
+
+    # add to orderbook
     list_prices_already_on_orderbook = []
     for order in open_orders:
       
