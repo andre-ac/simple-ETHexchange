@@ -113,7 +113,7 @@ def orderbook_sync():
         db.execute("UPDATE orderbook SET quantity= :quantity WHERE price=:price AND type = :type AND pair = :pair", quantity = query["quantity"]+quantity_left, price = order["price"], type = order["type"], pair= order["pair"])
 
       else:
-        db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES(?,?,?,?)", order["type"], order["price"], order["quantity"], order["type"])
+        db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES(?,?,?,?)", order["pair"], order["price"], order["quantity"], order["type"])
         list_prices_already_on_orderbook.append(order["price"])
         print(str(order["price"]) + " added to orderbook")
 
@@ -122,4 +122,4 @@ def orderbook_sync():
 if __name__ == "__main__":
     start_time = time.time()
     orderbook_sync()
-    print("Orderbook Synced in " + str((time.time() - start_time)*100)+ " ms")
+    print("Orderbook Synced in " + str(round((time.time() - start_time)*100,2))+ " ms")

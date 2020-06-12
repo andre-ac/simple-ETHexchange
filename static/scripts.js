@@ -29,14 +29,23 @@ $.get("/api/orderbook",function(data,status){
 
   for (var i in data_array) {
     const element_rev = data_array[i]
-    const element = data[i]
+    const element_sort = data[i]
+    
+    var str1 = String(element_sort.type);
+    var str2 = "S";
+    var n = str1.localeCompare(str2);
 
-
-    if (element.type == "B"){
+    //alert(typeof(str1) + " and is : " + str1 + " " + typeof(str2) + " and is : " + str2)
+    console.log("Here2  " + JSON.stringify(element_sort) + " and " + JSON.stringify(element_rev))
+    if (element_rev.type == String("B")){
       bid.push(element_rev.price,element_rev.quantity)
     }
-    else{
-      ask.push(element.price,element.quantity)
+    // ERROR HERE , TYPE IS S BUT ITS NOT RECOGNIZING IT AS S
+    if (element_sort.type == 'S'){
+      ask.push(element_sort.price,element_sort.quantity)
+    }
+    else {
+      console.log("Error 7")
     }
   };
 console.log("Reversed "+ bid)
@@ -130,8 +139,13 @@ $(document).ready(function(){
     get_orderbook()
   });
   if($("#buttonbuy").is(":visible")){
-      get_openorders()};
-});
+      get_openorders()
+      
+      setInterval(function(){
+        get_orderbook()
+      }, 500);}
+    
+    });
 
 //BUY and SELL when clicking the buttons
 $(document).ready(function(){
@@ -159,7 +173,8 @@ $(document).ready(function(){
 });
 
   $("#buttonsell").click(function(){
-    console.log("clicked 1")
+
+    if (pricefield.value > 0 && quantityfield.value > 0 && quantityfield.value * 1000 % 10 == 0 && pricefield.value * 100 % 10 == 0){
     $.post("/api/sendorder",
     {
       pair: "ETHUSD",
@@ -167,12 +182,17 @@ $(document).ready(function(){
       quantity: quantityfield.value,
       type: "S",
       ordertype: "L"
-    },
-    function(data, status){
+    },function(data, status){
       console.log("Data: " + data + "\nStatus: " + status);
     });
     setTimeout(get_openorders,100)
+    }
+    else{
+      console.log(pricefield.value + " "+ pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
+      alert("Invalid fields")
+    }
   });
+
 });
 
 function orderdeleteclick(order_id){
