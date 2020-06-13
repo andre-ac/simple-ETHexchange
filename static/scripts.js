@@ -31,21 +31,12 @@ $.get("/api/orderbook",function(data,status){
     const element_rev = data_array[i]
     const element_sort = data[i]
     
-    var str1 = String(element_sort.type);
-    var str2 = "S";
-    var n = str1.localeCompare(str2);
-
-    //alert(typeof(str1) + " and is : " + str1 + " " + typeof(str2) + " and is : " + str2)
-    console.log("Here2  " + JSON.stringify(element_sort) + " and " + JSON.stringify(element_rev))
     if (element_rev.type == String("B")){
       bid.push(element_rev.price,element_rev.quantity)
     }
     // ERROR HERE , TYPE IS S BUT ITS NOT RECOGNIZING IT AS S
-    if (element_sort.type == 'S'){
+    if (element_sort.type == "S"){
       ask.push(element_sort.price,element_sort.quantity)
-    }
-    else {
-      console.log("Error 7")
     }
   };
 console.log("Reversed "+ bid)
