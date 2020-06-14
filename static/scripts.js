@@ -42,6 +42,20 @@ $.get("/api/orderbook",function(data,status){
 console.log("Reversed "+ bid)
 console.log("Sorted " + ask)
 
+//this fills any reminaing spot of ask and bids until the 8th place to assure that the orderbook doesnt show as undefined
+for (let index = 0; index < 8; index++) {
+  
+  if (typeof bid[index] == "undefined"){
+    bid[index] = "---"
+  }
+
+  if (typeof ask[index] == "undefined"){
+    ask[index] = "---"
+  }
+
+  
+}
+
   document.getElementById("bid1-price").innerHTML = bid[0]
   document.getElementById("bid1-size").innerHTML = bid[1]
   document.getElementById("bid2-price").innerHTML = bid[2]
