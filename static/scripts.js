@@ -39,8 +39,6 @@ $.get("/api/orderbook",function(data,status){
       ask.push(element_sort.price,element_sort.quantity)
     }
   };
-console.log("Reversed "+ bid)
-console.log("Sorted " + ask)
 
 //this fills any reminaing spot of ask and bids until the 8th place to assure that the orderbook doesnt show as undefined
 for (let index = 0; index < 8; index++) {
@@ -148,7 +146,7 @@ $(document).ready(function(){
       
       setInterval(function(){
         get_orderbook()
-      }, 500);}
+      }, 2000);}
     
     });
 

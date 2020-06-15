@@ -24,6 +24,8 @@ def add_order_orderbook(new_order_id):
 
   orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price = :price", price=order["price"])
 
+  try_execution(order)
+
   # if there are no order at that price
   if len(orderbook_for_price) == 0:
     db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES (?,?,?,?)", order["pair"], order["price"], order["quantity"], order["type"])
@@ -34,7 +36,45 @@ def add_order_orderbook(new_order_id):
       db.execute("UPDATE orderbook SET quantity = :quantity WHERE pair = :pair AND price = :price AND type = :type", quantity = order["quantity"]+orderbook_for_price[0]["quantity"], pair = order["pair"], price = order["price"], type = order["type"] )
     else:
       print(order["order_id"] + " MATCHED")
+      db.execute("DELETE FROM open_orders WHERE user_id = :user AND order_id = :order_id", user=session["user_id"], order_id = new_order_id)
       # if the price is the same and type is different then it means that someone is buying/selling for our desired price
+
+
+
+def try_execution(order):
+  """ Checks and executes order immediately if applicable """
+
+  if order["type"] == "S":
+    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type", pair= order["pair"], type = "B")
+
+    if matching_side[0]["price"] >= order["price"]:
+      #Order should execute right away
+      print("sell order would execute")
+      order_quantity_left = order["quantity"]-order["filled"]
+
+      for buy_order in matching_side:
+        
+
+        if buy_order["quantity_left"] >= order_quantity_left:
+          print()
+
+
+    else:
+      return False
+
+
+  else:
+    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type", pair= order["pair"], type = "B")
+    
+    if matching_side[0]["price"] >= order["price"]:
+      #Order should execute right away
+      print("buy order would execute")
+
+    else:
+      return False
+
+
+
 
 def del_order_orderbook(order_id):
   """ Deletes order to both orderbooks (hidden and visible) """
