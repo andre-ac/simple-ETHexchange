@@ -54,9 +54,13 @@ def try_execution(order):
 
       for buy_order in matching_side:
         
-
+        #if the quantity of the buy order is enough to fill the new order
         if buy_order["quantity_left"] >= order_quantity_left:
-          print()
+          db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = buy_order["quantity_left"]-order_quantity_left, order_id = buy_order["order_id"])
+          order_quantity_left = 0
+          orderbook_sync()
+          break
+
 
 
     else:
@@ -126,7 +130,7 @@ def orderbook_sync():
 
       hidden_order = db.execute("SELECT * FROM hidden_orderbook WHERE order_id = :orderid", orderid= orderid)[0]
       if quantity_left != hidden_order["quantity_left"]:
-        db.execute("UPDATE hidden_orderbook SET quantity = :quantity", quantity = quantity_left)
+        db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity", quantity = quantity_left)
         print(f"{orderid} had wrong quantity in hidden, updated")
       else:
         print(f"{orderid} quantity was correct")
