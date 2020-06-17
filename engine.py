@@ -56,10 +56,13 @@ def try_execution(order):
         
         #if the quantity of the buy order is enough to fill the new order
         if buy_order["quantity_left"] >= order_quantity_left:
+          print(f"was enough {order}")
           db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = buy_order["quantity_left"]-order_quantity_left, order_id = buy_order["order_id"])
           order_quantity_left = 0
           orderbook_sync()
           break
+        else:
+          print("Wasn't enough")
 
 
 
@@ -126,9 +129,10 @@ def orderbook_sync():
 
       else:
         print(f"{orderid} not here, adding it")
-        db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)", order["pair"], order["price"], order["quantity"]-order["filled"], order["order_id"],order["time"],order["type"], order["user_id"])
+        db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)", order["pair"], order["price"], quantity_left, order["order_id"],order["time"],order["type"], order["user_id"])
 
       hidden_order = db.execute("SELECT * FROM hidden_orderbook WHERE order_id = :orderid", orderid= orderid)[0]
+      
       if quantity_left != hidden_order["quantity_left"]:
         db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity", quantity = quantity_left)
         print(f"{orderid} had wrong quantity in hidden, updated")
