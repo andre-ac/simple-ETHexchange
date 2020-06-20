@@ -46,7 +46,7 @@ def try_execution(order):
   """ Checks and executes order immediately if applicable """
 
   if order["type"] == "S":
-    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type", pair= order["pair"], type = "B")
+    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type ORDER BY price DESC, timeplaced DESC", pair= order["pair"], type = "B")
 
     if matching_side[0]["price"] >= order["price"]:
       #Order should execute right away
@@ -128,7 +128,7 @@ def orderbook_sync():
       
       # get order ids available in the hidden orderbook before sync
       list_order_ids_on_openorder.append(orderid)
-      quantity_left = order["quantity"]-order["filled"]
+      quantity_left = roundt(order["quantity"]-order["filled"],2)
       
       
       if orderid in list_order_ids_on_hidden:
