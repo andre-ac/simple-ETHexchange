@@ -60,7 +60,8 @@ def try_execution(order):
           print(f"was enough {order}")
           db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = buy_order["quantity_left"]-order_quantity_left, order_id = buy_order["order_id"])
           db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
-          db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = buy_order["quantity_left"]-order_quantity_left, order_id = buy_order["order_id"])
+          buy_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= buy_order["order_id"])[0]
+          db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = buy_order_openorders["filled"]+order_quantity_left, order_id = buy_order["order_id"])
           order_quantity_left = 0
           orderbook_sync()
           return True
@@ -128,7 +129,7 @@ def orderbook_sync():
       
       # get order ids available in the hidden orderbook before sync
       list_order_ids_on_openorder.append(orderid)
-      quantity_left = roundt(order["quantity"]-order["filled"],2)
+      quantity_left = round(order["quantity"]-order["filled"],2)
       
       
       if orderid in list_order_ids_on_hidden:
@@ -167,10 +168,10 @@ def orderbook_sync():
       if order["price"] in list_prices_already_on_orderbook:
         quantity_left = order["quantity"]-order["filled"]
         query = db.execute("SELECT * FROM orderbook WHERE price = :price", price=order["price"])[0]
-        db.execute("UPDATE orderbook SET quantity= :quantity WHERE price=:price AND type = :type AND pair = :pair", quantity = query["quantity"]+quantity_left, price = order["price"], type = order["type"], pair= order["pair"])
+        db.execute("UPDATE orderbook SET quantity= :quantity WHERE price=:price AND type = :type AND pair = :pair", quantity = round(query["quantity"]+quantity_left,2), price = order["price"], type = order["type"], pair= order["pair"])
 
       else:
-        db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES(?,?,?,?)", order["pair"], order["price"], order["quantity"]-order["filled"], order["type"])
+        db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES(?,?,?,?)", order["pair"], order["price"], round(order["quantity"]-order["filled"],2), order["type"])
         list_prices_already_on_orderbook.append(order["price"])
         print(str(order["price"]) + " added to orderbook")
 
