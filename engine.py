@@ -59,30 +59,33 @@ def try_execution(order):
       order_quantity_left = order["quantity"]-order["filled"]
 
       for buy_order in matching_side:
-        
-        #if the quantity of the buy order is enough to fill the new order
-        if buy_order["quantity_left"] >= order_quantity_left:
-          print(f"was enough {order}")
-          db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = buy_order["quantity_left"]-order_quantity_left, order_id = buy_order["order_id"])
-          db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
-          db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
-          
-          buy_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= buy_order["order_id"])[0]
-          db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(buy_order_openorders["filled"]+order_quantity_left,2), order_id = buy_order["order_id"])
-          order_quantity_left = 0
-          orderbook_sync()
-          return True
+
+        if buy_order["price"] >= order["price"]:
+          #if the quantity of the buy order is enough to fill the new order
+          if buy_order["quantity_left"] >= order_quantity_left:
+            print(f"was enough {order}")
+            db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = buy_order["quantity_left"]-order_quantity_left, order_id = buy_order["order_id"])
+            db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
+            db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
+            
+            buy_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= buy_order["order_id"])[0]
+            db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(buy_order_openorders["filled"]+order_quantity_left,2), order_id = buy_order["order_id"])
+            order_quantity_left = 0
+            orderbook_sync()
+            return True
+
+          else:
+            print("Wasn't enough")
+            db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= buy_order["order_id"])
+            db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= buy_order["order_id"])
+
+            order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= order["order_id"])[0]
+            db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(order_openorders["filled"]+buy_order["quantity_left"],2), order_id = order["order_id"])
+            db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(order_quantity_left-buy_order["quantity_left"],2), order_id = order["order_id"])
+            order_quantity_left = round(order_openorders["quantity"]-order_openorders["filled"]-buy_order["quantity_left"],2)
 
         else:
-          print("Wasn't enough")
-          db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= buy_order["order_id"])
-          db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= buy_order["order_id"])
-
-          order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= order["order_id"])[0]
-          db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(order_openorders["filled"]+buy_order["quantity_left"],2), order_id = order["order_id"])
-          db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(order_quantity_left-buy_order["quantity_left"],2), order_id = order["order_id"])
-          order_quantity_left = round(order_openorders["quantity"]-order_openorders["filled"]-buy_order["quantity_left"],2)
-
+          return False
 
       if order_quantity_left > 0:
 
