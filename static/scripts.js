@@ -130,7 +130,7 @@ $(document).ready(function(){
   if($("#user_navbar_eth_balance").is(":visible")){
   setInterval(function(){
     get_userdata()
-  }, 2000);}
+  }, 100000);}
   else {
     console.log("not logged in")
   }
@@ -146,7 +146,7 @@ $(document).ready(function(){
       
       setInterval(function(){
         get_orderbook()
-      }, 2000);}
+      }, 100000);}
     
     });
 

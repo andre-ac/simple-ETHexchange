@@ -29,7 +29,6 @@ def add_order_orderbook(new_order_id):
     print("match1")
   else:
     updated_order = db.execute("SELECT * FROM open_orders WHERE user_id = :user AND order_id = :order_id", user=session["user_id"], order_id = new_order_id)[0]
-    db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)", order["pair"], order["price"], round(updated_order["quantity"]-updated_order["filled"],2), order["order_id"],order["time"],order["type"], session["user_id"])
     
     # if there are no order at that price
     if len(orderbook_for_price) == 0:
@@ -41,19 +40,25 @@ def add_order_orderbook(new_order_id):
         db.execute("UPDATE orderbook SET quantity = :quantity WHERE pair = :pair AND price = :price AND type = :type", quantity = round(updated_order["quantity"]+orderbook_for_price[0]["quantity"]-updated_order["filled"],2), pair = order["pair"], price = order["price"], type = order["type"] )
       else:
         print(order["order_id"] + " MATCHED - ERROR 700")
-        db.execute("DELETE FROM open_orders WHERE user_id = :user AND order_id = :order_id", user=session["user_id"], order_id = new_order_id)
+        db.execute("DELETE orderbook WHERE price =:price", price= order["price"])
+        db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES (?,?,?,?)", updated_order["pair"], updated_order["price"], round(updated_order["quantity"]-updated_order["filled"],2), order["type"])
         # if the price is the same and type is different then it means that someone is buying/selling for our desired price
 
 
 
 def try_execution(order):
   """ Checks and executes order if applicable """
-
+  db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)", order["pair"], order["price"], round(order["quantity"]-order["filled"],2), order["order_id"],order["time"],order["type"], session["user_id"])
+  
   if order["type"] == "S":
     matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type ORDER BY price DESC, timeplaced DESC", pair= order["pair"], type = "B")
+    
+    if len(matching_side)==0:
+      return False
 
-
+    #check if order price is under market price
     if matching_side[0]["price"] >= order["price"]:
+    
       #Order should execute right away
       print("sell order would execute")
       order_quantity_left = order["quantity"]-order["filled"]
@@ -66,12 +71,18 @@ def try_execution(order):
           #if the quantity of the buy order is enough to fill the new order
           if buy_order["quantity_left"] >= order_quantity_left:
             print(f"was enough {order}")
-            db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(buy_order["quantity_left"]-order_quantity_left,2), order_id = buy_order["order_id"])
+            if buy_order["quantity_left"] == order_quantity_left:
+              db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= buy_order["order_id"])
+              db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= buy_order["order_id"])
+            else:
+              db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(buy_order["quantity_left"]-order_quantity_left,2), order_id = buy_order["order_id"])
+              buy_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= buy_order["order_id"])[0]
+              db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(buy_order_openorders["filled"]+order_quantity_left,2), order_id = buy_order["order_id"])
+
             db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
             db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
             
-            buy_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= buy_order["order_id"])[0]
-            db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(buy_order_openorders["filled"]+order_quantity_left,2), order_id = buy_order["order_id"])
+            
             order_quantity_left = 0
             orderbook_sync()
             return True
@@ -83,15 +94,17 @@ def try_execution(order):
 
             order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= order["order_id"])[0]
             db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(order_openorders["filled"]+buy_order["quantity_left"],2), order_id = order["order_id"])
-            db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(order_quantity_left-buy_order["quantity_left"],2), order_id = order["order_id"])
             order_quantity_left = round(order_openorders["quantity"]-order_openorders["filled"]-buy_order["quantity_left"],2)
+            db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = order_quantity_left, order_id = order["order_id"])
+            
         
         #if the
         else:
+          orderbook_sync()
           return False
 
       if order_quantity_left > 0:
-
+        orderbook_sync()
         print("Orders in the orderbook weren't enough to completely fill")
         return False
 
@@ -101,7 +114,7 @@ def try_execution(order):
 
 
   else:
-    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type", pair= order["pair"], type = "B")
+    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type", pair= order["pair"], type = "S")
     
     if matching_side[0]["price"] >= order["price"]:
       #Order should execute right away
@@ -109,8 +122,6 @@ def try_execution(order):
 
     else:
       return False
-
-
 
 
 def del_order_orderbook(order_id):
