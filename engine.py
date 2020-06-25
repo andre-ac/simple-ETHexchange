@@ -41,7 +41,7 @@ def add_order_orderbook(new_order_id):
       else:
         print(order["order_id"] + " MATCHED - ERROR 700")
         db.execute("DELETE orderbook WHERE price =:price", price= order["price"])
-        db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES (?,?,?,?)", updated_order["pair"], updated_order["price"], round(updated_order["quantity"]-updated_order["filled"],2), order["type"])
+        #db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES (?,?,?,?)", updated_order["pair"], updated_order["price"], round(updated_order["quantity"]-updated_order["filled"],2), order["type"])
         # if the price is the same and type is different then it means that someone is buying/selling for our desired price
 
 
@@ -104,7 +104,7 @@ def try_execution(order):
           return False
 
       if order_quantity_left > 0:
-        orderbook_sync()
+        
         print("Orders in the orderbook weren't enough to completely fill")
         return False
 

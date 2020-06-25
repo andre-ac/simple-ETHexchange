@@ -128,9 +128,10 @@ $(document).ready(function(){
 $(document).ready(function(){
   //makes sure get_userdata is only being requested when user is logged in (the balances in the nav is being shown)
   if($("#user_navbar_eth_balance").is(":visible")){
+  get_userdata()
   setInterval(function(){
     get_userdata()
-  }, 100000);}
+  }, 10000);}
   else {
     console.log("not logged in")
   }
@@ -143,10 +144,11 @@ $(document).ready(function(){
   });
   if($("#buttonbuy").is(":visible")){
       get_openorders()
+      get_orderbook()
       
       setInterval(function(){
         get_orderbook()
-      }, 100000);}
+      }, 10000);}
     
     });
 
