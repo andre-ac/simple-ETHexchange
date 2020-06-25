@@ -89,8 +89,16 @@ def try_execution(order):
 
           else:
             print("Wasn't enough")
+
             db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= buy_order["order_id"])
             db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= buy_order["order_id"])
+
+            orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price=:price", price=buy_order["price"])[0]
+            
+            if orderbook_for_price == buy_order["quantity_left"]:
+              db.execute("DELETE orderbook WHERE price=:price", price=buy_order["price"])
+            else:
+              db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-buy_order["quantity_left"],2),price=buy_order["price"])
 
             order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= order["order_id"])[0]
             db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(order_openorders["filled"]+buy_order["quantity_left"],2), order_id = order["order_id"])
