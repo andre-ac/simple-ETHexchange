@@ -168,7 +168,8 @@ $(document).ready(function(){
           console.log("Data: " + data + "\nStatus: " + status);
           console.log(pricefield.value + " " + pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
         });
-        setTimeout(get_openorders,100)
+        setTimeout(get_openorders,300)
+        setTimeout(get_orderbook,300)
     }
     else{
       console.log(pricefield.value + " "+ pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
@@ -190,7 +191,8 @@ $(document).ready(function(){
     },function(data, status){
       console.log("Data: " + data + "\nStatus: " + status);
     });
-    setTimeout(get_openorders,100)
+    setTimeout(get_openorders,300)
+    setTimeout(get_orderbook,300)
     }
     else{
       console.log(pricefield.value + " "+ pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
@@ -209,4 +211,5 @@ function orderdeleteclick(order_id){
     }
     });
     setTimeout(get_openorders,100)
+    setTimeout(get_orderbook,100)
   };
