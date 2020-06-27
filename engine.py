@@ -70,7 +70,7 @@ def try_execution(order):
 
           #if the quantity of the buy order is enough to fill the new order
           if buy_order["quantity_left"] >= order_quantity_left:
-            print(f"was enough {order}")
+            print(f"sell order : was enough {order}")
             if buy_order["quantity_left"] == order_quantity_left:
               db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= buy_order["order_id"])
               db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= buy_order["order_id"])
@@ -88,7 +88,7 @@ def try_execution(order):
             return True
 
           else:
-            print("Wasn't enough")
+            print("sell order : wasn't enough")
 
             db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= buy_order["order_id"])
             db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= buy_order["order_id"])
@@ -113,7 +113,7 @@ def try_execution(order):
 
       if order_quantity_left > 0:
         
-        print("Orders in the orderbook weren't enough to completely fill")
+        print("sell order : orders in the orderbook weren't enough to completely fill")
         return False
 
 
@@ -122,11 +122,71 @@ def try_execution(order):
 
 
   else:
-    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type", pair= order["pair"], type = "S")
+    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type ORDER BY price DESC, timeplaced DESC", pair= order["pair"], type = "S")
     
-    if matching_side[0]["price"] >= order["price"]:
+    if len(matching_side)==0:
+      return False
+
+    #check if order price is under market price
+    if matching_side[0]["price"] <= order["price"]:
+    
       #Order should execute right away
       print("buy order would execute")
+      order_quantity_left = order["quantity"]-order["filled"]
+
+      for sell_order in matching_side:
+        
+        #check if order should execute
+        if sell_order["price"] <= order["price"]:
+
+          #if the quantity of the buy order is enough to fill the new order
+          if sell_order["quantity_left"] >= order_quantity_left:
+            print(f"buy order : was enough {order}")
+            if sell_order["quantity_left"] == order_quantity_left:
+              db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= sell_order["order_id"])
+              db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= sell_order["order_id"])
+            else:
+              db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(sell_order["quantity_left"]-order_quantity_left,2), order_id = sell_order["order_id"])
+              sell_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= sell_order["order_id"])[0]
+              db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(sell_order_openorders["filled"]+order_quantity_left,2), order_id = sell_order["order_id"])
+
+            db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
+            db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
+            
+            
+            order_quantity_left = 0
+            orderbook_sync()
+            return True
+
+          else:
+            print("buy order : Wasn't enough")
+
+            db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= sell_order["order_id"])
+            db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= sell_order["order_id"])
+
+            orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price=:price", price=sell_order["price"])[0]
+            
+            if orderbook_for_price == sell_order["quantity_left"]:
+              db.execute("DELETE orderbook WHERE price=:price", price=sell_order["price"])
+            else:
+              db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-sell_order["quantity_left"],2),price=sell_order["price"])
+
+            order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= order["order_id"])[0]
+            db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(order_openorders["filled"]+sell_order["quantity_left"],2), order_id = order["order_id"])
+            order_quantity_left = round(order_openorders["quantity"]-order_openorders["filled"]-sell_order["quantity_left"],2)
+            db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = order_quantity_left, order_id = order["order_id"])
+            
+        
+        #if the
+        else:
+          orderbook_sync()
+          return False
+
+      if order_quantity_left > 0:
+        
+        print("buy order : Orders in the orderbook weren't enough to completely fill")
+        return False
+
 
     else:
       return False
