@@ -20,9 +20,6 @@ def add_order_orderbook(new_order_id):
   """ Adds order to both orderbooks (hidden and visible) """
 
   order = db.execute("SELECT * FROM open_orders WHERE user_id = :user AND order_id = :order_id", user=session["user_id"], order_id = new_order_id)[0]
-  
-
-  orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price = :price", price=order["price"])
 
   # check if order was fully executed
   if try_execution(order) == True:
@@ -30,6 +27,8 @@ def add_order_orderbook(new_order_id):
   else:
     updated_order = db.execute("SELECT * FROM open_orders WHERE user_id = :user AND order_id = :order_id", user=session["user_id"], order_id = new_order_id)[0]
     
+    orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price = :price", price=order["price"])
+
     # if there are no order at that price
     if len(orderbook_for_price) == 0:
       db.execute("INSERT INTO orderbook (pair,price,quantity,type) VALUES (?,?,?,?)", updated_order["pair"], updated_order["price"], round(updated_order["quantity"]-updated_order["filled"],2), order["type"])
@@ -84,7 +83,7 @@ def try_execution(order):
             
             
             order_quantity_left = 0
-            orderbook_sync()
+            
             return True
 
           else:
@@ -95,8 +94,8 @@ def try_execution(order):
 
             orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price=:price", price=buy_order["price"])[0]
             
-            if orderbook_for_price == buy_order["quantity_left"]:
-              db.execute("DELETE orderbook WHERE price=:price", price=buy_order["price"])
+            if orderbook_for_price["quantity"] == buy_order["quantity_left"]:
+              db.execute("DELETE FROM orderbook WHERE price=:price", price=buy_order["price"])
             else:
               db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-buy_order["quantity_left"],2),price=buy_order["price"])
 
@@ -108,7 +107,7 @@ def try_execution(order):
         
         #if the
         else:
-          orderbook_sync()
+          
           return False
 
       if order_quantity_left > 0:
@@ -122,7 +121,7 @@ def try_execution(order):
 
 
   else:
-    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type ORDER BY price DESC, timeplaced DESC", pair= order["pair"], type = "S")
+    matching_side = db.execute("SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type ORDER BY price ASC, timeplaced DESC", pair= order["pair"], type = "S")
     
     if len(matching_side)==0:
       return False
@@ -155,7 +154,7 @@ def try_execution(order):
             
             
             order_quantity_left = 0
-            orderbook_sync()
+            
             return True
 
           else:
@@ -166,8 +165,8 @@ def try_execution(order):
 
             orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price=:price", price=sell_order["price"])[0]
             
-            if orderbook_for_price == sell_order["quantity_left"]:
-              db.execute("DELETE orderbook WHERE price=:price", price=sell_order["price"])
+            if orderbook_for_price["quantity"] == round(sell_order["quantity_left"],2):
+              db.execute("DELETE FROM orderbook WHERE price=:price and pair=:pair", price=sell_order["price"], pair=sell_order["pair"])
             else:
               db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-sell_order["quantity_left"],2),price=sell_order["price"])
 
@@ -179,7 +178,7 @@ def try_execution(order):
         
         #if the
         else:
-          orderbook_sync()
+          "buy order : partially filled, but not fully"
           return False
 
       if order_quantity_left > 0:
