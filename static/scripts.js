@@ -148,7 +148,7 @@ $(document).ready(function(){
       
       setInterval(function(){
         get_orderbook()
-      }, 10000);}
+      }, 2000);}
     
     });
 
