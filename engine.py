@@ -81,6 +81,8 @@ def try_execution(order):
             db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
             db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
             
+            #if it got here, buy order in the book was enough to cover the sell order
+            db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",str(uuid.uuid4()), "ETHUSD", buy_order["price"], order_quantity_left, order["order_id"],buy_order["order_id"], int(time.time()))
             
             order_quantity_left = 0
             

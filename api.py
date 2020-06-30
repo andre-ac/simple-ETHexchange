@@ -63,10 +63,9 @@ def orderhistory():
         return 405
 
 @app.route('/api/tradehistory', methods=["GET"])
-@login_required
 def tradehistory():
     if request.method == "GET":
-        tradehistory = db.execute("SELECT * FROM trade_history WHERE user_id = :id", id= session["user_id"])
+        tradehistory = db.execute("SELECT * FROM trade_history")
         return jsonify(tradehistory), 200
     else:
         return "error ", 405
