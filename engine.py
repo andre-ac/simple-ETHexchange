@@ -73,10 +73,15 @@ def try_execution(order):
             if buy_order["quantity_left"] == order_quantity_left:
               db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= buy_order["order_id"])
               db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= buy_order["order_id"])
+
+              if orderbook_for_price["quantity"] == buy_order["quantity_left"]:
+                db.execute("DELETE FROM orderbook WHERE price=:price AND pair=:pair", price=orderbook_for_price["price"] ,pair=buy_order["pair"] )
             else:
               db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(buy_order["quantity_left"]-order_quantity_left,2), order_id = buy_order["order_id"])
               buy_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= buy_order["order_id"])[0]
               db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(buy_order_openorders["filled"]+order_quantity_left,2), order_id = buy_order["order_id"])
+              
+              db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-sell_order["quantity_left"],2),price=sell_order["price"])
 
             db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
             db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
@@ -143,16 +148,26 @@ def try_execution(order):
           #if the quantity of the buy order is enough to fill the new order
           if sell_order["quantity_left"] >= order_quantity_left:
             print(f"buy order : was enough {order}")
+
+            orderbook_for_price = db.execute("SELECT * FROM orderbook WHERE price=:price AND pair=:pair", price=sell_order["price"], pair=sell_order["pair"])[0]
+            
             if sell_order["quantity_left"] == order_quantity_left:
               db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= sell_order["order_id"])
               db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= sell_order["order_id"])
+
+              if orderbook_for_price["quantity"] == sell_order["quantity_left"]:
+                db.execute("DELETE FROM orderbook WHERE price=:price AND pair=:pair", price=orderbook_for_price["price"] ,pair=sell_order["pair"] )
+
             else:
               db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity = round(sell_order["quantity_left"]-order_quantity_left,2), order_id = sell_order["order_id"])
               sell_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= sell_order["order_id"])[0]
               db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(sell_order_openorders["filled"]+order_quantity_left,2), order_id = sell_order["order_id"])
+              
+              db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-sell_order["quantity_left"],2),price=sell_order["price"])
 
             db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
             db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
+            
             
             
             order_quantity_left = 0
