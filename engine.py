@@ -81,7 +81,7 @@ def try_execution(order):
               buy_order_openorders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid= buy_order["order_id"])[0]
               db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled = round(buy_order_openorders["filled"]+order_quantity_left,2), order_id = buy_order["order_id"])
               
-              db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-sell_order["quantity_left"],2),price=sell_order["price"])
+              db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(orderbook_for_price["quantity"]-buy_order["quantity_left"],2),price=buy_order["price"])
 
             db.execute("DELETE FROM open_orders WHERE order_id = :orderid" , orderid= order["order_id"])
             db.execute("DELETE FROM hidden_orderbook WHERE order_id = :orderid" , orderid= order["order_id"])
