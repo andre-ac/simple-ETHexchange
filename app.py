@@ -1,5 +1,3 @@
-from views import *
-from api import *
 import os
 import sys
 import uuid
@@ -7,6 +5,7 @@ import time
 import datetime
 import flask
 import sqlite3
+
 
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
@@ -18,6 +17,8 @@ from helper import login_required, usd, timeformater
 
 
 app = flask.Flask(__name__)
+from views import *
+from api import *
 
 
 app.secret_key = os.urandom(24)
