@@ -1,7 +1,10 @@
+from views import *
+from api import *
 import os
 import sys
 import uuid
-import time,datetime
+import time
+import datetime
 import flask
 import sqlite3
 
@@ -16,23 +19,24 @@ from helper import login_required, usd, timeformater
 
 app = flask.Flask(__name__)
 
-from api import *
-from views import *
 
 app.secret_key = os.urandom(24)
 app.config['SECRET_KEY'] = app.secret_key
-FLASK_DEBUG=1
+FLASK_DEBUG = 1
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Ensure responses aren't cached
+
+
 @app.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
 
 # Custom filters
 app.jinja_env.filters["usd"] = usd

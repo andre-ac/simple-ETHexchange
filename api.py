@@ -1,7 +1,8 @@
 import os
 import sys
 import uuid
-import time,datetime
+import time
+import datetime
 import flask
 import sqlite3
 
@@ -17,7 +18,8 @@ from app import app
 
 db = SQL('sqlite:///DB.db')
 
-@app.route('/api/sendorder', methods=['POST',"DELETE"])
+
+@app.route('/api/sendorder', methods=['POST', "DELETE"])
 @login_required
 def sendorder():
     if request.method == "POST":
@@ -29,38 +31,45 @@ def sendorder():
         ordertype = request.form.get("ordertype")
         filled = 0
         time_requested = int(time.time())
-        db.execute("INSERT INTO open_orders (order_id,user_id,pair,type,ordertype,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?,?,?)", new_order_id, session["user_id"], pair, type, ordertype, price, quantity, filled, time_requested)
+        db.execute("INSERT INTO open_orders (order_id,user_id,pair,type,ordertype,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?,?,?)",
+                   new_order_id, session["user_id"], pair, type, ordertype, price, quantity, filled, time_requested)
         add_order_orderbook(new_order_id)
-        return jsonify(result = "success", time = time_requested, pair = pair , price = price, quantity = quantity), 201
-    
+        return jsonify(result="success", time=time_requested, pair=pair, price=price, quantity=quantity), 201
+
     elif request.method == "DELETE":
         orderid = request.form.get("order_id")
         del_order_orderbook(orderid)
-        db.execute("DELETE FROM open_orders WHERE order_id = :orderid", orderid = orderid)
+        db.execute(
+            "DELETE FROM open_orders WHERE order_id = :orderid", orderid=orderid)
         return jsonify("Deleted"), 200
-    
+
     else:
         return 405
+
 
 @app.route('/api/userinfo', methods=["GET"])
 @login_required
 def userinfo():
     if request.method == "GET":
         time_requested = time.time()
-        basic_userinfo = db.execute("SELECT eth_balance,usd_balance,username FROM users WHERE user_id = :id", id= session["user_id"])[0]
-        basic_userinfo.update(time = time_requested)
+        basic_userinfo = db.execute(
+            "SELECT eth_balance,usd_balance,username FROM users WHERE user_id = :id", id=session["user_id"])[0]
+        basic_userinfo.update(time=time_requested)
         return jsonify(basic_userinfo), 200
     else:
         return 405
-        
+
+
 @app.route('/api/orderhistory', methods=["GET"])
 @login_required
 def orderhistory():
     if request.method == "GET":
-        orderhistory = db.execute("SELECT * FROM order_history WHERE user_id = :id", id= session["user_id"])
+        orderhistory = db.execute(
+            "SELECT * FROM order_history WHERE user_id = :id", id=session["user_id"])
         return jsonify(orderhistory), 200
     else:
         return 405
+
 
 @app.route('/api/tradehistory', methods=["GET"])
 def tradehistory():
@@ -70,15 +79,18 @@ def tradehistory():
     else:
         return "error ", 405
 
+
 @app.route('/api/openorders', methods=["GET"])
 @login_required
 def openorders():
     if request.method == "GET":
         time_requested = time.time()
-        ordersopen = db.execute("SELECT order_id, pair, type, ordertype, price, quantity, filled, time FROM open_orders WHERE user_id = :user", user=session["user_id"])
+        ordersopen = db.execute(
+            "SELECT order_id, pair, type, ordertype, price, quantity, filled, time FROM open_orders WHERE user_id = :user", user=session["user_id"])
         return jsonify(ordersopen, time_requested), 200
     else:
         return "error ", 405
+
 
 @app.route('/api/orderbook', methods=["GET"])
 def orderbook():

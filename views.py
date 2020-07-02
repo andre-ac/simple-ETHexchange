@@ -1,7 +1,8 @@
 import os
 import sys
 import uuid
-import time,datetime
+import time
+import datetime
 import flask
 import sqlite3
 
@@ -17,9 +18,11 @@ from app import app
 
 db = SQL('sqlite:///DB.db')
 
+
 @app.route('/', methods=['GET'])
 def home():
     return render_template("home.html")
+
 
 @app.route("/trade")
 @login_required
@@ -27,28 +30,32 @@ def trade():
     """Trading Interface"""
     return render_template("trade.html")
 
+
 @app.route('/history', methods=["GET"])
 @login_required
 def history():
-    history = db.execute("SELECT * FROM order_history WHERE user_id = :id", id=session["user_id"])
+    history = db.execute(
+        "SELECT * FROM order_history WHERE user_id = :id", id=session["user_id"])
     return render_template("history.html", history=history)
 
-@app.route("/login", methods=["GET","POST"])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
     """Login user"""
     if request.method == "POST":
         if not request.form.get("username"):
-            return render_template("login.html",alert_error="must provide username")
+            return render_template("login.html", alert_error="must provide username")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("login.html",alert_error="must provide username")
+            return render_template("login.html", alert_error="must provide username")
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username", username=request.form.get("username"))
+        rows = db.execute("SELECT * FROM users WHERE username = :username",
+                          username=request.form.get("username"))
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["password_hash"], request.form.get("password")):
-            return render_template("login.html",alert_error="invalid username or password")
+            return render_template("login.html", alert_error="invalid username or password")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["user_id"]
@@ -58,6 +65,7 @@ def login():
         return redirect("/")
     else:
         return render_template("login.html")
+
 
 @app.route("/logout")
 def logout():
@@ -69,6 +77,7 @@ def logout():
     # Redirect user to login form
     return redirect("/")
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register new user"""
@@ -76,30 +85,32 @@ def register():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return render_template("register.html",alert_error="must provide username")
+            return render_template("register.html", alert_error="must provide username")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("register.html",alert_error="must provide password")
+            return render_template("register.html", alert_error="must provide password")
 
         # Check if password and password confirmation match
-        elif request.form.get("password")!=request.form.get("confirmation"):
-            return render_template("register.html",alert_error="passwords must match")
+        elif request.form.get("password") != request.form.get("confirmation"):
+            return render_template("register.html", alert_error="passwords must match")
 
         # get number of users with same username
-        rows = db.execute("SELECT * FROM users WHERE username = :username", username=request.form.get("username"))
-        
-        # assign username id based on number of rows (users) + 1 
+        rows = db.execute("SELECT * FROM users WHERE username = :username",
+                          username=request.form.get("username"))
+
+        # assign username id based on number of rows (users) + 1
         fresh_username_id = len(db.execute("SELECT * FROM users"))+1
 
         # ensures username doesn't exist
-        if len(rows)==0:
-            #inserts
-            db.execute("INSERT INTO users (user_id,username,password_hash) VALUES(?,?,?)", fresh_username_id, request.form.get("username"), generate_password_hash(request.form.get("password")))
+        if len(rows) == 0:
+            # inserts
+            db.execute("INSERT INTO users (user_id,username,password_hash) VALUES(?,?,?)", fresh_username_id,
+                       request.form.get("username"), generate_password_hash(request.form.get("password")))
             session["user_id"] = fresh_username_id
             session['logged_in'] = True
             return redirect("/")
         else:
-            return render_template("register.html",alert_error="username already taken")
+            return render_template("register.html", alert_error="username already taken")
     else:
         return render_template("register.html")
