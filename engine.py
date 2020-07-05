@@ -100,7 +100,7 @@ def try_execution(order):
                                 buy_order_openorders["filled"]+order_quantity_left, 2), order_id=buy_order["order_id"])
 
                             db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(
-                                orderbook_for_price["quantity"]-buy_order["quantity_left"], 2), price=buy_order["price"])
+                                orderbook_for_price["quantity"]-order_quantity_left, 2), price=buy_order["price"])
 
                         db.execute(
                             "DELETE FROM open_orders WHERE order_id = :orderid", orderid=order["order_id"])
@@ -245,7 +245,7 @@ def try_execution(order):
                         db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id",
                                    quantity=order_quantity_left, order_id=order["order_id"])
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
-                                   str(uuid.uuid4()), "ETHUSD", sell_order["price"], sell_order["quantity_left"],2, order["order_id"], sell_order["order_id"], int(time.time()))
+                                   str(uuid.uuid4()), "ETHUSD", sell_order["price"], round(sell_order["quantity_left"],2), order["order_id"], sell_order["order_id"], int(time.time()))
 
                 # if the
                 else:
