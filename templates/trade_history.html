@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Order History
+    History
 {% endblock %}
 
 {% block main %}
@@ -9,26 +9,20 @@
 <table class="table table-hover table-sm" style="width: 80%; margin-left: auto; margin-right: auto;">
   <thead s>
     <tr>
-      <th scope="col">Order ID</th>
+      <th scope="col">Trade ID</th>
       <th scope="col">Pair</th>
-      <th scope="col">Type</th>
-      <th scope="col">Order Type</th>
       <th scope="col">Price</th>
-      <th scope="col">Avg. Price</th>
       <th scope="col">Q. Filled</th>
       <th scope="col">Time UTC</th>
     </tr>
   </thead>
   <tbody>
-    {% for i in order_history %}
+    {% for i in trade_history %}
       <tr>
-        <td>{{i.order_id}}</td>
+        <td>{{i.trade_id}}</td>
         <td>{{i.pair}}</td>
-        <td>{{i.type}}</td>
-        <td>{{i.ordertype}}</td>
         <td>{{i.price|usd}}</td>
-        <td>{{i.avg_price|usd}}</td>
-        <td>{{i.quantity_filled}}</td>
+        <td>{{i.quantity}}</td>
         <td>{{i.time|timeformater}}</td>
       </tr>
     {% endfor %}
