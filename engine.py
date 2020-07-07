@@ -262,6 +262,13 @@ def try_execution(order):
             return False
 
 
+def add_order_history(order_id):
+    """Adds order to order history"""
+
+    #check if already in order history
+    #check trade_history
+    
+
 def del_order_orderbook(order_id):
     """ Deletes order to both orderbooks (hidden and visible) """
 
