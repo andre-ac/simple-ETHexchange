@@ -266,7 +266,13 @@ def add_order_history(order_id):
     """Adds order to order history"""
 
     #check if already in order history
-    #check trade_history
+    history_of_order = db.execute(
+        "SELECT * FROM order_history WHERE order_id = :order_id", order_id=order_id)
+    if len(history_of_order)==1:
+        return True
+    elif len(history_of_order)==0:
+        order
+
     
 
 def del_order_orderbook(order_id):
