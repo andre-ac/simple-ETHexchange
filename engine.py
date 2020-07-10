@@ -262,7 +262,7 @@ def try_execution(order):
             return False
 
 
-def add_order_history(order_id):
+def add_order_history(order_id,order_status):
     """Adds order to order history"""
 
     #check if already in order history
@@ -271,7 +271,10 @@ def add_order_history(order_id):
     if len(history_of_order)==1:
         return True
     elif len(history_of_order)==0:
-        order
+        order_details = db.execute(
+                            "SELECT * FROM open_orders WHERE order_id = :order_id", order_id=order_id)[0]
+        #insert into order history 
+        #order_status should be either filled or cancelled
 
     
 
