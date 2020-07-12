@@ -264,33 +264,48 @@ def try_execution(order):
 
 def add_order_history(order_id,order_status):
     """Adds order to order history, only call this when the order is either fully executed or cancelled"""
-
+    #order_status should be either EXECUTED or CANCELLED
     #check if already in order history
     history_of_order = db.execute(
         "SELECT * FROM order_history WHERE order_id = :order_id", order_id=order_id)
+    
     if len(history_of_order)==1:
+        print("Order already in order history")
         return True
+    
     elif len(history_of_order)==0:
         order_details = db.execute(
                             "SELECT * FROM open_orders WHERE order_id = :order_id", order_id=order_id)[0]
+        #get prices from trade history and divide by sum, if order was maker then it's the order price if it was taker then it is the execution price
+        order_executions = db.execute(
+                            "SELECT * FROM trade_history WHERE taker_order = :order_id OR maker_order = :order_id", order_id= order_id)
+        #if there are no executions then order avg price is 0
+        if len(order_executions)==0:
+            avg_price=0
+        else:
+            sum_cost=0
+
+            for execution in order_executions:
+                sum_cost = sum_cost + execution["quantity"]*execution["price"]
+
+            avg_price=sum_cost/order_details["filled"]
+
         if order_status=="CANCELLED":
-            print()
+            #if status is cancelled 
+            db.execute("INSERT INTO order_history (order_id,user_id,pair,type,ordertype,price,avg_price,quantity_filled,time,status) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                        order_id,session["user_id"],order_details["pair"],order_details["type"],order_details["ordertype"],order_details["price"],avg_price,order_details["filled"],int(time.time()),"CANCELLED")
             return False
+
         elif order_status=="EXECUTED":
-            #INSERT INTO ORDER HISTORY WITH 
-
-            avg_price=#get prices from trade history and divide by sum
-
+            
             db.execute("INSERT INTO order_history (order_id,user_id,pair,type,ordertype,price,avg_price,quantity_filled,time) VALUES (?,?,?,?,?,?,?,?,?)",
-                        order_id,session["user_id"],order_details["pair"],order_details["type"],order_details["ordertype"],order_details["price"],avg_price,order_details["quantity"],int(time.time()))
+                        order_id,session["user_id"],order_details["pair"],order_details["type"],order_details["ordertype"],order_details["price"],avg_price,order_details["quantity"],int(time.time()),"EXECUTED")
             return False
+
         else:
             print("ERROR order_status not found")
             return 0
-        #insert into order history 
-        #order_status should be either filled or cancelled
 
-    
 
 def del_order_orderbook(order_id):
     """ Deletes order to both orderbooks (hidden and visible) """
