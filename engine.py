@@ -78,20 +78,33 @@ def try_execution(order):
 
                     # if the quantity of the buy order is enough to fill the new order
                     if buy_order["quantity_left"] >= order_quantity_left:
+                        #buy order is enough to cover the sell order
+
                         print(f"sell order : was enough {order}")
                         orderbook_for_price = db.execute(
                             "SELECT * FROM orderbook WHERE price=:price", price=buy_order["price"])[0]
 
                         if buy_order["quantity_left"] == order_quantity_left:
+                            #buy order has the exact same vol as sell order size needed
+
+                            add_order_history(buy_order["order_id"],"EXECUTED", buy_order["price"])
+                            add_order_history(order["order_id"],"EXECUTED", buy_order["price"])
+
                             db.execute(
                                 "DELETE FROM open_orders WHERE order_id = :orderid", orderid=buy_order["order_id"])
                             db.execute(
                                 "DELETE FROM hidden_orderbook WHERE order_id = :orderid", orderid=buy_order["order_id"])
 
                             if orderbook_for_price["quantity"] == buy_order["quantity_left"]:
+                                #the buy order the only order in the price level in public orderbook
+
                                 db.execute("DELETE FROM orderbook WHERE price=:price AND pair=:pair",
                                            price=orderbook_for_price["price"], pair=buy_order["pair"])
                         else:
+                            #buy order is bigger than the sell order
+
+                            add_order_history(order["order_id"],"EXECUTED",buy_order["price"])
+
                             db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity=round(
                                 buy_order["quantity_left"]-order_quantity_left, 2), order_id=buy_order["order_id"])
                             buy_order_openorders = db.execute(
@@ -117,6 +130,8 @@ def try_execution(order):
 
                     else:
                         print("sell order : wasn't enough")
+                        #buy order wasn't enough
+                        add_order_history(buy_order["order_id"],"EXECUTED", buy_order["price"])
 
                         db.execute(
                             "DELETE FROM hidden_orderbook WHERE order_id = :orderid", orderid=buy_order["order_id"])
@@ -127,6 +142,8 @@ def try_execution(order):
                             "SELECT * FROM orderbook WHERE price=:price", price=buy_order["price"])[0]
 
                         if orderbook_for_price["quantity"] == buy_order["quantity_left"]:
+                            #the buy order the only order in the price level in public orderbook 
+
                             db.execute(
                                 "DELETE FROM orderbook WHERE price=:price", price=buy_order["price"])
                         else:
@@ -181,11 +198,17 @@ def try_execution(order):
                     # if the quantity of the buy order is enough to fill the new order
                     if sell_order["quantity_left"] >= order_quantity_left:
                         print(f"buy order : was enough {order}")
+                        
 
                         orderbook_for_price = db.execute(
                             "SELECT * FROM orderbook WHERE price=:price AND pair=:pair", price=sell_order["price"], pair=sell_order["pair"])[0]
 
                         if sell_order["quantity_left"] == order_quantity_left:
+                            #sell order has the exact same vol as buy order size needed
+
+                            add_order_history(sell_order["order_id"],"EXECUTED",sell_order["price"])
+                            add_order_history(order["order_id"],"EXECUTED",sell_order["price"])
+
                             db.execute(
                                 "DELETE FROM open_orders WHERE order_id = :orderid", orderid=sell_order["order_id"])
                             db.execute(
@@ -196,6 +219,9 @@ def try_execution(order):
                                            price=orderbook_for_price["price"], pair=sell_order["pair"])
 
                         else:
+
+                            add_order_history(order["order_id"],"EXECUTED", sell_order["price"])
+
                             db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity=round(
                                 sell_order["quantity_left"]-order_quantity_left, 2), order_id=sell_order["order_id"])
                             sell_order_openorders = db.execute(
@@ -220,6 +246,8 @@ def try_execution(order):
 
                     else:
                         print("buy order : Wasn't enough")
+
+                        add_order_history(sell_order["order_id"],"EXECUTED",sell_order["price"])
 
                         db.execute(
                             "DELETE FROM hidden_orderbook WHERE order_id = :orderid", orderid=sell_order["order_id"])
@@ -262,9 +290,10 @@ def try_execution(order):
             return False
 
 
-def add_order_history(order_id,order_status):
+def add_order_history(order_id,order_status,*price):
     """Adds order to order history, only call this when the order is either fully executed or cancelled"""
     #order_status should be either EXECUTED or CANCELLED
+    price = price[0]
     #check if already in order history
     history_of_order = db.execute(
         "SELECT * FROM order_history WHERE order_id = :order_id", order_id=order_id)
@@ -281,14 +310,15 @@ def add_order_history(order_id,order_status):
                             "SELECT * FROM trade_history WHERE taker_order = :order_id OR maker_order = :order_id", order_id= order_id)
         #if there are no executions then order avg price is 0
         if len(order_executions)==0:
-            avg_price=0
+            avg_price=float(price)
         else:
-            sum_cost=0
+            print(price)
+            sum_cost=float(price)*(float((order_details["quantity"])-float(order_details["filled"])))
 
             for execution in order_executions:
-                sum_cost = sum_cost + execution["quantity"]*execution["price"]
+                sum_cost = sum_cost + float(execution["quantity"]*execution["price"])
 
-            avg_price=sum_cost/order_details["filled"]
+            avg_price=sum_cost/order_details["quantity"]
 
         if order_status=="CANCELLED":
             #if status is cancelled 
@@ -298,7 +328,7 @@ def add_order_history(order_id,order_status):
 
         elif order_status=="EXECUTED":
             
-            db.execute("INSERT INTO order_history (order_id,user_id,pair,type,ordertype,price,avg_price,quantity_filled,time) VALUES (?,?,?,?,?,?,?,?,?)",
+            db.execute("INSERT INTO order_history (order_id,user_id,pair,type,ordertype,price,avg_price,quantity_filled,time,status) VALUES (?,?,?,?,?,?,?,?,?,?)",
                         order_id,session["user_id"],order_details["pair"],order_details["type"],order_details["ordertype"],order_details["price"],avg_price,order_details["quantity"],int(time.time()),"EXECUTED")
             return False
 

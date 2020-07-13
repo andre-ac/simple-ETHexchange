@@ -13,7 +13,7 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from helper import login_required, usd, timeformater
-from engine import add_order_orderbook, del_order_orderbook
+from engine import add_order_orderbook, del_order_orderbook, add_order_history
 from app import app
 
 db = SQL('sqlite:///DB.db')
@@ -38,6 +38,7 @@ def sendorder():
 
     elif request.method == "DELETE":
         orderid = request.form.get("order_id")
+        add_order_history(orderid,"CANCELLED")
         del_order_orderbook(orderid)
         db.execute(
             "DELETE FROM open_orders WHERE order_id = :orderid", orderid=orderid)

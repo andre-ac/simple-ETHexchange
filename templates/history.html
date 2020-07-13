@@ -10,6 +10,7 @@
   <thead s>
     <tr>
       <th scope="col">Order ID</th>
+      <th scope="col">Order Status</th>
       <th scope="col">Pair</th>
       <th scope="col">Type</th>
       <th scope="col">Order Type</th>
@@ -23,6 +24,7 @@
     {% for i in order_history %}
       <tr>
         <td>{{i.order_id}}</td>
+        <td>{{i.status}}</td>
         <td>{{i.pair}}</td>
         <td>{{i.type}}</td>
         <td>{{i.ordertype}}</td>
