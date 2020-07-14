@@ -293,7 +293,7 @@ def try_execution(order):
 def add_order_history(order_id,order_status,*price):
     """Adds order to order history, only call this when the order is either fully executed or cancelled"""
     #order_status should be either EXECUTED or CANCELLED
-    price = price[0]
+         
     #check if already in order history
     history_of_order = db.execute(
         "SELECT * FROM order_history WHERE order_id = :order_id", order_id=order_id)
@@ -309,25 +309,34 @@ def add_order_history(order_id,order_status,*price):
         order_executions = db.execute(
                             "SELECT * FROM trade_history WHERE taker_order = :order_id OR maker_order = :order_id", order_id= order_id)
         #if there are no executions then order avg price is 0
-        if len(order_executions)==0:
-            avg_price=float(price)
-        else:
-            print(price)
-            sum_cost=float(price)*(float((order_details["quantity"])-float(order_details["filled"])))
-
-            for execution in order_executions:
-                sum_cost = sum_cost + float(execution["quantity"]*execution["price"])
-
-            avg_price=sum_cost/order_details["quantity"]
+        
 
         if order_status=="CANCELLED":
             #if status is cancelled 
+            sum_cost=0
+            for execution in order_executions:
+                sum_cost = sum_cost + float(execution["quantity"]*execution["price"])
+
+            avg_price=sum_cost/order_details["filled"]
+
             db.execute("INSERT INTO order_history (order_id,user_id,pair,type,ordertype,price,avg_price,quantity_filled,time,status) VALUES (?,?,?,?,?,?,?,?,?,?)",
                         order_id,session["user_id"],order_details["pair"],order_details["type"],order_details["ordertype"],order_details["price"],avg_price,order_details["filled"],int(time.time()),"CANCELLED")
             return False
 
         elif order_status=="EXECUTED":
-            
+            price=price[0]
+
+            if len(order_executions)==0:
+                avg_price=float(price)
+
+            else:
+                sum_cost=float(price)*(float((order_details["quantity"])-float(order_details["filled"])))
+                
+                for execution in order_executions:
+                    sum_cost = sum_cost + float(execution["quantity"]*execution["price"])
+
+                avg_price=sum_cost/order_details["quantity"]
+
             db.execute("INSERT INTO order_history (order_id,user_id,pair,type,ordertype,price,avg_price,quantity_filled,time,status) VALUES (?,?,?,?,?,?,?,?,?,?)",
                         order_id,session["user_id"],order_details["pair"],order_details["type"],order_details["ordertype"],order_details["price"],avg_price,order_details["quantity"],int(time.time()),"EXECUTED")
             return False

@@ -66,7 +66,7 @@ def userinfo():
 def orderhistory():
     if request.method == "GET":
         orderhistory = db.execute(
-            "SELECT * FROM order_history WHERE user_id = :id", id=session["user_id"])
+            "SELECT * FROM order_history ORDER BY time WHERE user_id = :id", id=session["user_id"])
         return jsonify(orderhistory), 200
     else:
         return 405
