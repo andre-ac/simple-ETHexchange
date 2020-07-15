@@ -1,5 +1,6 @@
 console.log("script.js loaded")
 
+
 window.onload = function(){
   var user_navbar_eth_balance = document.getElementById("user_navbar_eth_balance");
   var user_navbar_usd_balance = document.getElementById("user_navbar_eth_balance");
@@ -73,6 +74,25 @@ for (let index = 0; index < 8; index++) {
   document.getElementById("ask4-size").innerHTML = ask[7]
 });
 };
+
+function chart(){
+  var charid = document.getElementById("chartContainer")
+  const chart = LightweightCharts.createChart(charid, { width: 800, height: 300 });
+  const lineSeries = chart.addLineSeries();
+  lineSeries.setData([
+    { time: '2019-04-11', value: 80.01 },
+    { time: '2019-04-12', value: 96.63 },
+    { time: '2019-04-13', value: 76.64 },
+    { time: '2019-04-14', value: 81.89 },
+    { time: '2019-04-15', value: 74.43 },
+    { time: '2019-04-16', value: 80.01 },
+    { time: '2019-04-17', value: 96.63 },
+    { time: '2019-04-18', value: 76.64 },
+    { time: '2019-04-19', value: 81.89 },
+    { time: '2019-04-20', value: 74.43 },
+]);
+  chart.timeScale().fitContent();
+}
 
 function get_openorders(){
 $.get("/api/openorders",function(data,status){
