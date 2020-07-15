@@ -15,12 +15,19 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helper import login_required, usd, timeformater
 from engine import add_order_orderbook, del_order_orderbook, add_order_history
 from app import app
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 db = SQL('sqlite:///DB.db')
 
+limiter = Limiter(
+    app,
+    key_func=get_remote_address
+)
 
 @app.route('/api/sendorder', methods=['POST', "DELETE"])
 @login_required
+@limiter.limit("1/second")
 def sendorder():
     if request.method == "POST":
         new_order_id = str(uuid.uuid4())
@@ -66,7 +73,7 @@ def userinfo():
 def orderhistory():
     if request.method == "GET":
         orderhistory = db.execute(
-            "SELECT * FROM order_history ORDER BY time WHERE user_id = :id", id=session["user_id"])
+            "SELECT * FROM order_history WHERE user_id = :id ORDER BY time DESC", id=session["user_id"])
         return jsonify(orderhistory), 200
     else:
         return 405

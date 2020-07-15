@@ -35,13 +35,13 @@ def trade():
 @login_required
 def order_history():
     order_history = db.execute(
-        "SELECT * FROM order_history WHERE user_id = :id", id=session["user_id"])
+        "SELECT * FROM order_history WHERE user_id = :id ORDER BY time DESC", id=session["user_id"])
     return render_template("history.html", order_history=order_history)
 
 @app.route('/trade-history', methods=["GET"])
 @login_required
 def trade_history():
-    #NEED TO JOIN THIS WITH ORDER_HISTORY AND OPEN_ORDERS TO ONLY GET FOR USER=ID
+    #NEED TO JOIN THIS WITH ORDER_HISTORY AND OPEN_ORDERS TO ONLY GET FOR USER=IDl
     trade_history = db.execute(
         "SELECT * FROM trade_history")
     return render_template("trade_history.html", trade_history=trade_history)

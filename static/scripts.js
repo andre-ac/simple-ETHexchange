@@ -164,12 +164,13 @@ $(document).ready(function(){
         quantity: quantityfield.value,
         type: "B",
         ordertype: "L"
-      },function(data, status){
-          console.log("Data: " + data + "\nStatus: " + status);
-          console.log(pricefield.value + " " + pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
-        });
+      })
+      .done( function(msg){
         setTimeout(get_openorders,300)
-        setTimeout(get_orderbook,300)
+        setTimeout(get_orderbook,300)} )
+      .fail( function(xhr, textStatus, errorThrown) {
+        alert(xhr.status +": " + xhr.statusText)
+      });
     }
     else{
       console.log(pricefield.value + " "+ pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
@@ -188,11 +189,13 @@ $(document).ready(function(){
       quantity: quantityfield.value,
       type: "S",
       ordertype: "L"
-    },function(data, status){
-      console.log("Data: " + data + "\nStatus: " + status);
+    })
+    .done( function(msg){
+      setTimeout(get_openorders,300)
+      setTimeout(get_orderbook,300)} )
+    .fail( function(xhr, textStatus, errorThrown) {
+      alert(xhr.status +": " + xhr.statusText)
     });
-    setTimeout(get_openorders,300)
-    setTimeout(get_orderbook,300)
     }
     else{
       console.log(pricefield.value + " "+ pricefield.value * 100 % 10 + " quantity " + quantityfield.value + " " +quantityfield.value % 1)
@@ -209,7 +212,11 @@ function orderdeleteclick(order_id){
     data: {
       order_id: order_id
     }
+    })
+    .done( function(msg){
+      setTimeout(get_openorders,300)
+      setTimeout(get_orderbook,300)} )
+    .fail( function(xhr, textStatus, errorThrown) {
+      alert(xhr.status +": " + xhr.statusText)
     });
-    setTimeout(get_openorders,100)
-    setTimeout(get_orderbook,100)
   };

@@ -313,11 +313,14 @@ def add_order_history(order_id,order_status,*price):
 
         if order_status=="CANCELLED":
             #if status is cancelled 
-            sum_cost=0
-            for execution in order_executions:
-                sum_cost = sum_cost + float(execution["quantity"]*execution["price"])
-
-            avg_price=sum_cost/order_details["filled"]
+            if order_details["filled"] == 0:
+                avg_price=0
+            else:
+                sum_cost=0
+                for execution in order_executions:
+                    sum_cost = sum_cost + float(execution["quantity"]*execution["price"])
+                
+                avg_price=sum_cost/order_details["filled"]
 
             db.execute("INSERT INTO order_history (order_id,user_id,pair,type,ordertype,price,avg_price,quantity_filled,time,status) VALUES (?,?,?,?,?,?,?,?,?,?)",
                         order_id,session["user_id"],order_details["pair"],order_details["type"],order_details["ordertype"],order_details["price"],avg_price,order_details["filled"],int(time.time()),"CANCELLED")
