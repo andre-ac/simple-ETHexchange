@@ -76,9 +76,34 @@ for (let index = 0; index < 8; index++) {
 };
 
 function chart(){
+  $.get("/api/tradehistory",function(data){
+    var tradehistory = data
+    }
+    .done(function(data){
+      return data
+    }))
+  //console.log("Data is " + tradehistory[0])
+
   var charid = document.getElementById("chartContainer")
-  const chart = LightweightCharts.createChart(charid, { width: 800, height: 300 });
-  const lineSeries = chart.addLineSeries();
+  const chart = LightweightCharts.createChart(charid, 
+    { width: 700, height: 300 } 
+    );
+
+  chart.applyOptions({
+      layout: {
+          backgroundColor: '#fffef2',
+          textColor: '#000000',
+          fontSize: 12,
+          fontFamily: 'Calibri',
+      },
+  });
+
+  const lineSeries = chart.addLineSeries({
+    title: 'ETHUSD',
+    color:'#000000'}
+    
+  );
+  
   lineSeries.setData([
     { time: '2019-04-11', value: 80.01 },
     { time: '2019-04-12', value: 96.63 },
@@ -91,8 +116,17 @@ function chart(){
     { time: '2019-04-19', value: 81.89 },
     { time: '2019-04-20', value: 74.43 },
 ]);
+
   chart.timeScale().fitContent();
-}
+
+  lineSeries.applyOptions({
+      priceFormat: {
+          type: 'custom',
+         minMove: 0.01,
+          formatter: price => '$' + price.toFixed(2),
+      }
+  })
+};
 
 function get_openorders(){
 $.get("/api/openorders",function(data,status){
