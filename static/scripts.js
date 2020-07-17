@@ -74,15 +74,22 @@ for (let index = 0; index < 8; index++) {
   document.getElementById("ask4-size").innerHTML = ask[7]
 });
 };
+$(document).ready(function(){
+  function get_tradehistory()
+  {
+      jQuery.ajax({
+      
+          url: '/api/tradehistory',
+          type: 'get',
+          dataType: 'text/html',
+          success: chart
+      });  
+  }
+});
 
-function chart(){
-  $.get("/api/tradehistory",function(data){
-    var tradehistory = data
-    }
-    .done(function(data){
-      return data
-    }))
-  //console.log("Data is " + tradehistory[0])
+function chart(returnData){
+  
+  console.log("Data is " + returnData)
 
   var charid = document.getElementById("chartContainer")
   const chart = LightweightCharts.createChart(charid, 
