@@ -74,42 +74,41 @@ for (let index = 0; index < 8; index++) {
   document.getElementById("ask4-size").innerHTML = ask[7]
 });
 };
-$(document).ready(function(){
-  function get_tradehistory()
-  {
-      jQuery.ajax({
-      
-          url: '/api/tradehistory',
-          type: 'get',
-          dataType: 'text/html',
-          success: chart
-      });  
-  }
-});
 
-function chart(returnData){
+function get_tradehistory(start)
+  {
+    $.get("/api/tradehistory", function(data){
+      
+      chart(data,start)
+    });
+}
+
+
+function chart(returnData,runchart){
   
   console.log("Data is " + returnData)
 
   var charid = document.getElementById("chartContainer")
-  const chart = LightweightCharts.createChart(charid, 
-    { width: 700, height: 300 } 
-    );
-
-  chart.applyOptions({
-      layout: {
-          backgroundColor: '#fffef2',
-          textColor: '#000000',
-          fontSize: 12,
-          fontFamily: 'Calibri',
-      },
-  });
-
-  const lineSeries = chart.addLineSeries({
-    title: 'ETHUSD',
-    color:'#000000'}
-    
-  );
+  if (runchart == true) {
+    var chart = LightweightCharts.createChart(charid, 
+      { width: 700, height: 300 } 
+      );
+      chart.applyOptions({
+        layout: {
+            backgroundColor: '#fffef2',
+            textColor: '#000000',
+            fontSize: 12,
+            fontFamily: 'Calibri',
+        },
+      });
+    }
+      var lineSeries = chart.addLineSeries({
+        title: 'ETHUSD',
+        color:'#000000'}
+      
+      );
+  
+  
   
   lineSeries.setData([
     { time: '2019-04-11', value: 80.01 },
@@ -203,15 +202,19 @@ $(document).ready(function(){
     get_openorders()
     get_orderbook()
   });
-  if($("#buttonbuy").is(":visible")){
+    if($("#buttonbuy").is(":visible")){
       get_openorders()
       get_orderbook()
-      
+
+      get_tradehistory(true)
+      setInterval(function(){
+        get_tradehistory(false)
+      }, 1000);}
       setInterval(function(){
         get_orderbook()
       }, 2000);}
     
-    });
+    );
 
 //BUY and SELL when clicking the buttons
 $(document).ready(function(){
