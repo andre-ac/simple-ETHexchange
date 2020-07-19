@@ -84,32 +84,38 @@ function get_tradehistory(start)
 }
 
 
-function chart(returnData,runchart){
+function chart(returnData){
   
   console.log("Data is " + returnData)
 
   var charid = document.getElementById("chartContainer")
-  if (runchart == true) {
-    var chart = LightweightCharts.createChart(charid, 
+    
+  var chart = LightweightCharts.createChart(charid, 
       { width: 700, height: 300 } 
       );
+
       chart.applyOptions({
         layout: {
             backgroundColor: '#fffef2',
             textColor: '#000000',
             fontSize: 12,
-            fontFamily: 'Calibri',
-        },
+            fontFamily: 'Calibri'}
       });
-    }
+      
       var lineSeries = chart.addLineSeries({
         title: 'ETHUSD',
-        color:'#000000'}
-      
-      );
+        color:'#000000'});
   
-  
-  
+  fetch("/api/tradehistory")
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(data) {    
+    lineSeries.setData(data.map(bar => {
+    	return { time: bar.time, value: bar.price };
+    }));
+  });
+
   lineSeries.setData([
     { time: '2019-04-11', value: 80.01 },
     { time: '2019-04-12', value: 96.63 },
@@ -205,16 +211,11 @@ $(document).ready(function(){
     if($("#buttonbuy").is(":visible")){
       get_openorders()
       get_orderbook()
-
-      get_tradehistory(true)
-      setInterval(function(){
-        get_tradehistory(false)
-      }, 1000);}
       setInterval(function(){
         get_orderbook()
       }, 2000);}
     
-    );
+});
 
 //BUY and SELL when clicking the buttons
 $(document).ready(function(){
