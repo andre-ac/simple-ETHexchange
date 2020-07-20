@@ -230,7 +230,7 @@ def try_execution(order):
                                 sell_order_openorders["filled"]+order_quantity_left, 2), order_id=sell_order["order_id"])
 
                             db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(
-                                orderbook_for_price["quantity"]-sell_order["quantity_left"], 2), price=sell_order["price"])
+                                orderbook_for_price["quantity"]-order_quantity_left, 2), price=sell_order["price"])
 
                         db.execute(
                             "DELETE FROM open_orders WHERE order_id = :orderid", orderid=order["order_id"])

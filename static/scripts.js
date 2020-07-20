@@ -75,14 +75,6 @@ for (let index = 0; index < 8; index++) {
 });
 };
 
-function get_tradehistory(start)
-  {
-    $.get("/api/tradehistory", function(data){
-      
-      chart(data,start)
-    });
-}
-
 
 function chart(returnData){
   
@@ -105,29 +97,18 @@ function chart(returnData){
       var lineSeries = chart.addLineSeries({
         title: 'ETHUSD',
         color:'#000000'});
-  
+        
+  setInterval(function(){
   fetch("/api/tradehistory")
   .then(function(response) {
     return response.json();
   })
-  .then(function(data) {    
-    lineSeries.setData(data.map(bar => {
-    	return { time: bar.time, value: bar.price };
+  .then(function(data,response) {    
+    console.log("Data loaded ")
+    lineSeries.setData(data.map(line => {
+    	return { time: line.time, value: line.price };
     }));
-  });
-
-  lineSeries.setData([
-    { time: '2019-04-11', value: 80.01 },
-    { time: '2019-04-12', value: 96.63 },
-    { time: '2019-04-13', value: 76.64 },
-    { time: '2019-04-14', value: 81.89 },
-    { time: '2019-04-15', value: 74.43 },
-    { time: '2019-04-16', value: 80.01 },
-    { time: '2019-04-17', value: 96.63 },
-    { time: '2019-04-18', value: 76.64 },
-    { time: '2019-04-19', value: 81.89 },
-    { time: '2019-04-20', value: 74.43 },
-]);
+  })},1000)
 
   chart.timeScale().fitContent();
 
