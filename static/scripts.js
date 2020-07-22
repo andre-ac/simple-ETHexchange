@@ -75,6 +75,13 @@ for (let index = 0; index < 8; index++) {
 });
 };
 
+function uniqByKeepLast(a, key) {
+  return [
+      ...new Map(
+          a.map(x => [key(x), x])
+      ).values()
+  ]
+}
 
 function chart(returnData){
   
@@ -105,8 +112,10 @@ function chart(returnData){
   })
   .then(function(data,response) {    
     console.log("Data loaded ")
-    lineSeries.setData(data.map(line => {
-    	return { time: line.time, value: line.price };
+    cleaned_data = uniqByKeepLast(data, a => a.time)
+    lineSeries.setData(cleaned_data.map(line => {
+      //make sure there aren't repeated times
+    	return { time: line.time , value: line.price };
     }));
   })},1000)
 
