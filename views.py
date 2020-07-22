@@ -41,9 +41,8 @@ def order_history():
 @app.route('/trade-history', methods=["GET"])
 @login_required
 def trade_history():
-    #NEED TO JOIN THIS WITH ORDER_HISTORY AND OPEN_ORDERS TO ONLY GET FOR USER=IDl
     trade_history = db.execute(
-        "SELECT * FROM trade_history")
+        "SELECT * FROM trade_history ORDER BY time DESC")
     return render_template("trade_history.html", trade_history=trade_history)
 
 
