@@ -32,12 +32,24 @@ def sendorder():
     if request.method == "POST":
         new_order_id = str(uuid.uuid4())
         pair = request.form.get("pair")
-        price = request.form.get("price")
-        quantity = request.form.get("quantity")
+        price = float(request.form.get("price"))
+        quantity = float(request.form.get("quantity"))
         type = request.form.get("type")
+        user_balances = db.execute(
+            "SELECT eth_balance,usd_balance FROM users WHERE user_id = :id", id=session["user_id"])[0]
         ordertype = request.form.get("ordertype")
         filled = 0
         time_requested = int(time.time())
+        if type == "S":
+            if quantity >= float(user_balances["eth_balance"]):
+                return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
+            else:
+                pass 
+        else:
+            if (quantity*price) >= float(user_balances["usd_balance"]):
+                return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
+            else:
+                pass
         db.execute("INSERT INTO open_orders (order_id,user_id,pair,type,ordertype,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?,?,?)",
                    new_order_id, session["user_id"], pair, type, ordertype, price, quantity, filled, time_requested)
         add_order_orderbook(new_order_id)

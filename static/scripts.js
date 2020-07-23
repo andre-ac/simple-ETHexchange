@@ -101,7 +101,8 @@ function chart(returnData){
             fontFamily: 'Calibri'}
       });
       
-      var lineSeries = chart.addLineSeries({
+      var lineSeries =
+       chart.addLineSeries({
         title: 'ETHUSD',
         color:'#000000'});
         
@@ -118,6 +119,7 @@ function chart(returnData){
     	return { time: line.time , value: line.price };
     }));
   })},1000)
+
 
   chart.timeScale().fitContent();
 
@@ -224,7 +226,7 @@ $(document).ready(function(){
         setTimeout(get_openorders,300)
         setTimeout(get_orderbook,300)} )
       .fail( function(xhr, textStatus, errorThrown) {
-        alert(xhr.status +": " + xhr.statusText)
+        alert(xhr.status +": " + xhr.responseJSON.result)
       });
     }
     else{
@@ -249,7 +251,7 @@ $(document).ready(function(){
       setTimeout(get_openorders,300)
       setTimeout(get_orderbook,300)} )
     .fail( function(xhr, textStatus, errorThrown) {
-      alert(xhr.status +": " + xhr.statusText)
+      alert(xhr.status +": " + xhr.responseJSON.result)
     });
     }
     else{
