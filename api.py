@@ -36,17 +36,17 @@ def sendorder():
         quantity = float(request.form.get("quantity"))
         type = request.form.get("type")
         user_balances = db.execute(
-            "SELECT eth_balance,usd_balance FROM users WHERE user_id = :id", id=session["user_id"])[0]
+            "SELECT available_eth_balance,available_usd_balance FROM users WHERE user_id = :id", id=session["user_id"])[0]
         ordertype = request.form.get("ordertype")
         filled = 0
         time_requested = int(time.time())
         if type == "S":
-            if quantity >= float(user_balances["eth_balance"]):
+            if quantity >= float(user_balances["available_eth_balance"]):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
                 pass 
         else:
-            if (quantity*price) >= float(user_balances["usd_balance"]):
+            if (quantity*price) >= float(user_balances["available_usd_balance"]):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
                 pass
