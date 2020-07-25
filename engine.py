@@ -123,7 +123,11 @@ def try_execution(order):
                         # if it got here, buy order in the book was enough to cover the sell order
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", buy_order["price"], order_quantity_left, order["order_id"], buy_order["order_id"], int(time.time()))
-
+                        #remove balances from user
+                        user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
+                        db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
+                                    usd_balance=round(user_info["usd_balance"]+(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]-order_quantity_left,2),
+                                    available_usd_balance=round(user_info["available_usd_balance"]+(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]-order_quantity_left,2),user_id=session["user_id"])
                         order_quantity_left = 0
 
                         return True
