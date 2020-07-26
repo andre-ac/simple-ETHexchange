@@ -1,2 +1,3 @@
 -Credited and debit from balances when orders are executed, this is probably best to be associated with trade history (when a new entry is made for trade history a new balance change is made)
 -Make available balances parameter to make sure user doesnt place 2 sell orders for 5 ETH when they only have 5 (current check won't stop this)
+-Make sure that orderbook sync also takes into account the available balances vs open ordes

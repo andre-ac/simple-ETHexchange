@@ -125,6 +125,8 @@ def try_execution(order):
                                    str(uuid.uuid4()), "ETHUSD", buy_order["price"], order_quantity_left, order["order_id"], buy_order["order_id"], int(time.time()))
                         #remove balances from user
                         user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
+                        
+                        #HERE need to use join on the maker order id and get the user id of the other side in order to do balance changes
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
                                     usd_balance=round(user_info["usd_balance"]+(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]-order_quantity_left,2),
                                     available_usd_balance=round(user_info["available_usd_balance"]+(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]-order_quantity_left,2),user_id=session["user_id"])
@@ -165,8 +167,11 @@ def try_execution(order):
                                    
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", buy_order["price"], buy_order["quantity_left"], order["order_id"], buy_order["order_id"], int(time.time()))
+                        user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
+                        db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
+                                    usd_balance=round(user_info["usd_balance"]+(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]-order_quantity_left,2),
+                                    available_usd_balance=round(user_info["available_usd_balance"]+(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]-order_quantity_left,2),user_id=session["user_id"])
 
-                # if the
                 else:
 
                     return False
@@ -244,6 +249,11 @@ def try_execution(order):
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", sell_order["price"], order_quantity_left, order["order_id"], sell_order["order_id"], int(time.time()))
 
+                        user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
+                        db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
+                                    usd_balance=round(user_info["usd_balance"]-(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]+order_quantity_left,2),
+                                    available_usd_balance=round(user_info["available_usd_balance"]-(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]+order_quantity_left,2),user_id=session["user_id"])
+
                         order_quantity_left = 0
 
                         return True
@@ -278,6 +288,11 @@ def try_execution(order):
                                    quantity=order_quantity_left, order_id=order["order_id"])
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", sell_order["price"], round(sell_order["quantity_left"],2), order["order_id"], sell_order["order_id"], int(time.time()))
+
+                        user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
+                        db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
+                                    usd_balance=round(user_info["usd_balance"]-(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]+order_quantity_left,2),
+                                    available_usd_balance=round(user_info["available_usd_balance"]-(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]+order_quantity_left,2),user_id=session["user_id"])
 
                 # if the
                 else:
@@ -379,6 +394,7 @@ def orderbook_sync():
 
     open_orders = db.execute("SELECT * FROM open_orders")
     hidden_orderbook = db.execute("SELECT * FROM hidden_orderbook")
+    user_ids = db.execute("SELECT * FROM users")
 
     db.execute("DELETE FROM orderbook")
     # pass to orderbook
@@ -446,6 +462,12 @@ def orderbook_sync():
                        order["pair"], order["price"], round(order["quantity"]-order["filled"], 2), order["type"])
             list_prices_already_on_orderbook.append(order["price"])
             print(str(order["price"]) + " added to orderbook")
+
+    
+    #for users in user_ids:
+    #check if order quantity-filled is equal to eth balance-available eth for sell orders
+    #check if order quantity-filled times price is equal to usd balance - available usd for buy orders
+    
 
 
 if __name__ == "__main__":
