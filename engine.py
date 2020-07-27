@@ -464,10 +464,30 @@ def orderbook_sync():
             print(str(order["price"]) + " added to orderbook")
 
     
-    #for users in user_ids:
-    #check if order quantity-filled is equal to eth balance-available eth for sell orders
-    #check if order quantity-filled times price is equal to usd balance - available usd for buy orders
-    
+    for user in user_ids:
+        
+        orders_for_user = db.execute("SELECT * FROM hidden_orderbook WHERE user_id=:user_id",user_id=user["user_id"])
+
+        locked_eth = 0
+        locked_usd = 0
+        for order in orders_for_user:
+        #check if order quantity-filled is equal to eth balance-available eth for sell orders
+            if order["type"] == "S":
+                locked_eth += order["quantity_left"]
+        #check if order quantity-filled times price is equal to usd balance - available usd for buy orders
+            else:
+                locked_usd += order["quantity_left"]*order["price"]
+
+        if user["available_usd_balance"] == user["usd_balance"]-locked_usd:
+            print("Available USD for user " + user["user_id"] + " correct")
+        else:
+            print("Not correct, assigned correct value for available usd balance, was avalable "+ user["available_usd_balance"]+" instead of " + (user["usd_balance"]-locked_usd))
+
+        if user["available_eth_balance"] == user["eth_balance"]-locked_eth:
+            print("Available ETH for user " + user["user_id"] + " correct")
+        else:
+            print("Not correct, assigned correct value for available eth balance, was avalable "+ user["available_eth_balance"]+" instead of " + (user["eth_balance"]-locked_eth))
+
 
 
 if __name__ == "__main__":
