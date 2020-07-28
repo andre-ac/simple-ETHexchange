@@ -478,15 +478,17 @@ def orderbook_sync():
             else:
                 locked_usd += order["quantity_left"]*order["price"]
 
-        if user["available_usd_balance"] == user["usd_balance"]-locked_usd:
-            print("Available USD for user " + user["user_id"] + " correct")
-        else:
-            print("Not correct, assigned correct value for available usd balance, was avalable "+ user["available_usd_balance"]+" instead of " + (user["usd_balance"]-locked_usd))
+        print("Locked USD : " + str(locked_usd) + " Locked ETH : " + str(locked_eth))
 
-        if user["available_eth_balance"] == user["eth_balance"]-locked_eth:
-            print("Available ETH for user " + user["user_id"] + " correct")
+        if user["available_usd_balance"] == round(user["usd_balance"]-locked_usd,2):
+            print("Available USD for user " + str(user["user_id"]) + " correct")
         else:
-            print("Not correct, assigned correct value for available eth balance, was avalable "+ user["available_eth_balance"]+" instead of " + (user["eth_balance"]-locked_eth))
+            print("Not correct, assigned correct value for available usd balance, was " + str(user["available_usd_balance"]) +" instead of " + str((user["usd_balance"]-locked_usd)))
+
+        if user["available_eth_balance"] == round((user["eth_balance"]-locked_eth),2):
+            print("Available ETH for user " + str(user["user_id"]) + " correct")
+        else:
+            print("Not correct, assigned correct value for available eth balance, was " + str(user["available_eth_balance"]) +" instead of " + str(round((user["eth_balance"]-locked_eth),2)))
 
 
 
