@@ -44,11 +44,15 @@ def sendorder():
             if quantity >= float(user_balances["available_eth_balance"]):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
+                db.execute("UPDATE users SET available_eth_balance = :new_available_balance WHERE user_id=:id",
+                            new_available_balance = round(user_balances["available_eth_balance"]-(quantity),2), id=session["user_id"])
                 pass 
         else:
             if (quantity*price) >= float(user_balances["available_usd_balance"]):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
+                db.execute("UPDATE users SET available_usd_balance = :new_available_balance WHERE user_id=:id",
+                            new_available_balance = round(user_balances["available_usd_balance"]-(quantity*price),2), id=session["user_id"])
                 pass
         db.execute("INSERT INTO open_orders (order_id,user_id,pair,type,ordertype,price,quantity,filled,time) VALUES(?,?,?,?,?,?,?,?,?)",
                    new_order_id, session["user_id"], pair, type, ordertype, price, quantity, filled, time_requested)
@@ -58,6 +62,17 @@ def sendorder():
     elif request.method == "DELETE":
         orderid = request.form.get("order_id")
         add_order_history(orderid,"CANCELLED")
+        user_balances = db.execute(
+            "SELECT available_eth_balance,available_usd_balance FROM users WHERE user_id = :id", id=session["user_id"])[0]
+        order_details = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid=orderid)
+        if order_details["type"] == "S":
+            db.execute("UPDATE users SET available_eth_balance = :new_available_balance WHERE user_id=:id",
+                        new_available_balance = round(user_balances["available_eth_balance"]+order_details["quantity"]-order_details["filled"],2), id=session["user_id"])
+            pass
+        else:
+            db.execute("UPDATE users SET available_usd_balance = :new_available_balance WHERE user_id=:id",
+                        new_available_balance = round(user_balances["available_usd_balance"]+((order_details["quantity"]-order_details["filled"])*order_details["price"]),2), id=session["user_id"])
+            pass
         del_order_orderbook(orderid)
         db.execute(
             "DELETE FROM open_orders WHERE order_id = :orderid", orderid=orderid)
