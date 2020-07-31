@@ -115,8 +115,10 @@ def register():
             db.execute("INSERT INTO users (user_id,username,password_hash) VALUES(?,?,?)", fresh_username_id,
                        request.form.get("username"), generate_password_hash(request.form.get("password")))
             session["user_id"] = fresh_username_id
+            
             session['logged_in'] = True
             return redirect("/")
+
         else:
             return render_template("register.html", alert_error="username already taken")
     else:

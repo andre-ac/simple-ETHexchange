@@ -57,20 +57,23 @@ def try_execution(order):
     db.execute("INSERT INTO hidden_orderbook (pair,price,quantity_left,order_id,timeplaced,type, user_id) VALUES(?,?,?,?,?,?,?)",
                order["pair"], order["price"], round(order["quantity"]-order["filled"], 2), order["order_id"], order["time"], order["type"], session["user_id"])
 
+    #if the order is a sell order
     if order["type"] == "S":
         matching_side = db.execute(
             "SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type ORDER BY price DESC, timeplaced DESC", pair=order["pair"], type="B")
 
+        #if it doesn't cross the book
         if len(matching_side) == 0:
             return False
 
-        # check if order price is under market price
+        # check if order price is under highest bid price
         if matching_side[0]["price"] >= order["price"]:
 
             # Order should execute right away
-            print("sell order would execute")
+            print("Sell order executed")
             order_quantity_left = order["quantity"]-order["filled"]
 
+            #for each buy order in the book
             for buy_order in matching_side:
 
                 # check if order should execute
@@ -78,9 +81,9 @@ def try_execution(order):
 
                     # if the quantity of the buy order is enough to fill the new order
                     if buy_order["quantity_left"] >= order_quantity_left:
-                        #buy order is enough to cover the sell order
-
-                        print(f"sell order : was enough {order}")
+                        
+                        #buy order is enough to cover the full sell order
+                        print(f"Was enough for sell order {order}")
                         orderbook_for_price = db.execute(
                             "SELECT * FROM orderbook WHERE price=:price", price=buy_order["price"])[0]
 
@@ -107,11 +110,12 @@ def try_execution(order):
 
                             db.execute("UPDATE hidden_orderbook SET quantity_left = :quantity WHERE order_id = :order_id", quantity=round(
                                 buy_order["quantity_left"]-order_quantity_left, 2), order_id=buy_order["order_id"])
+                            
                             buy_order_openorders = db.execute(
                                 "SELECT * FROM open_orders WHERE order_id = :orderid", orderid=buy_order["order_id"])[0]
+                            
                             db.execute("UPDATE open_orders SET filled = :filled WHERE order_id = :order_id", filled=round(
                                 buy_order_openorders["filled"]+order_quantity_left, 2), order_id=buy_order["order_id"])
-
                             db.execute("UPDATE orderbook SET quantity=:quantity WHERE price=:price", quantity=round(
                                 orderbook_for_price["quantity"]-order_quantity_left, 2), price=buy_order["price"])
 
@@ -130,12 +134,13 @@ def try_execution(order):
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
                                     usd_balance=round(user_info["usd_balance"]+(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]-order_quantity_left,2),
                                     available_usd_balance=round(user_info["available_usd_balance"]+(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]-order_quantity_left,2),user_id=session["user_id"])
+                        
                         order_quantity_left = 0
 
                         return True
 
                     else:
-                        print("sell order : wasn't enough")
+                        print("wasn't enough for sell order")
                         #buy order wasn't enough
                         add_order_history(buy_order["order_id"],"EXECUTED", buy_order["price"])
 
@@ -167,10 +172,12 @@ def try_execution(order):
                                    
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", buy_order["price"], buy_order["quantity_left"], order["order_id"], buy_order["order_id"], int(time.time()))
+                        
                         user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
+                        
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
-                                    usd_balance=round(user_info["usd_balance"]+(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]-order_quantity_left,2),
-                                    available_usd_balance=round(user_info["available_usd_balance"]+(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]-order_quantity_left,2),user_id=session["user_id"])
+                                    usd_balance=round(user_info["usd_balance"]+(buy_order["quantity_left"]*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]-buy_order["quantity_left"],2),
+                                    available_usd_balance=round(user_info["available_usd_balance"]+(buy_order["quantity_left"]*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"],2),user_id=session["user_id"])
 
                 else:
 
@@ -186,9 +193,12 @@ def try_execution(order):
             return False
 
     else:
+        #if order is a buy order
+
         matching_side = db.execute(
             "SELECT * FROM hidden_orderbook WHERE pair=:pair AND type=:type ORDER BY price ASC, timeplaced DESC", pair=order["pair"], type="S")
 
+        #if there are no sell order on the book
         if len(matching_side) == 0:
             return False
 
@@ -196,7 +206,7 @@ def try_execution(order):
         if matching_side[0]["price"] <= order["price"]:
 
             # Order should execute right away
-            print("buy order would execute")
+            print("Buy order executed")
             order_quantity_left = order["quantity"]-order["filled"]
 
             for sell_order in matching_side:
@@ -206,7 +216,7 @@ def try_execution(order):
 
                     # if the quantity of the buy order is enough to fill the new order
                     if sell_order["quantity_left"] >= order_quantity_left:
-                        print(f"buy order : was enough {order}")
+                        print(f"Was enough for buy order {order}")
                         
 
                         orderbook_for_price = db.execute(
@@ -251,15 +261,15 @@ def try_execution(order):
 
                         user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
-                                    usd_balance=round(user_info["usd_balance"]-(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]+order_quantity_left,2),
-                                    available_usd_balance=round(user_info["available_usd_balance"]-(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]+order_quantity_left,2),user_id=session["user_id"])
+                                    usd_balance=round(user_info["usd_balance"]-(order_quantity_left*sell_order["price"]),2),eth_balance=round(user_info["eth_balance"]+order_quantity_left,2),
+                                    available_usd_balance=round(user_info["available_usd_balance"]-(order_quantity_left*sell_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]+order_quantity_left,2),user_id=session["user_id"])
 
                         order_quantity_left = 0
 
                         return True
 
                     else:
-                        print("buy order : Wasn't enough")
+                        print("wasn't enough for buy order")
 
                         add_order_history(sell_order["order_id"],"EXECUTED",sell_order["price"])
 
@@ -291,18 +301,18 @@ def try_execution(order):
 
                         user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
-                                    usd_balance=round(user_info["usd_balance"]-(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]+order_quantity_left,2),
-                                    available_usd_balance=round(user_info["available_usd_balance"]-(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]+order_quantity_left,2),user_id=session["user_id"])
+                                    usd_balance=round(user_info["usd_balance"]-(sell_order["quantity_left"]*sell_order["price"]),2),eth_balance=round(user_info["eth_balance"]+sell_order["quantity_left"],2),
+                                    available_usd_balance=round(user_info["available_usd_balance"],2),available_eth_balance=round(user_info["available_eth_balance"]+sell_order["quantity_left"],2),user_id=session["user_id"])
 
                 # if the
                 else:
-                    "buy order : partially filled, but not fully"
+                    "Buy order was partially filled, but not fully"
                     return False
 
             if order_quantity_left > 0:
 
                 print(
-                    "buy order : Orders in the orderbook weren't enough to completely fill")
+                    "Orders in the orderbook weren't enough to completely fill buy order")
                 return False
 
         else:

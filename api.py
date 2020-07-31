@@ -41,14 +41,14 @@ def sendorder():
         filled = 0
         time_requested = int(time.time())
         if type == "S":
-            if quantity >= float(user_balances["available_eth_balance"]):
+            if quantity >= round(float(user_balances["available_eth_balance"]),2):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
                 db.execute("UPDATE users SET available_eth_balance = :new_available_balance WHERE user_id=:id",
                             new_available_balance = round(user_balances["available_eth_balance"]-(quantity),2), id=session["user_id"])
                 pass 
         else:
-            if (quantity*price) >= float(user_balances["available_usd_balance"]):
+            if round((quantity*price),2) >= round(float(user_balances["available_usd_balance"]),2):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
                 db.execute("UPDATE users SET available_usd_balance = :new_available_balance WHERE user_id=:id",
@@ -88,7 +88,7 @@ def userinfo():
     if request.method == "GET":
         time_requested = time.time()
         basic_userinfo = db.execute(
-            "SELECT eth_balance,usd_balance,username FROM users WHERE user_id = :id", id=session["user_id"])[0]
+            "SELECT eth_balance,usd_balance,available_usd_balance, available_eth_balance, username FROM users WHERE user_id = :id", id=session["user_id"])[0]
         basic_userinfo.update(time=time_requested)
         return jsonify(basic_userinfo), 200
     else:

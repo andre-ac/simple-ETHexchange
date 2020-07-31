@@ -11,8 +11,8 @@ window.onload = function(){
 
 function get_userdata(){
 $.get("/api/userinfo",function(data,status){
-      user_navbar_eth_balance.innerHTML = data.eth_balance;
-      user_navbar_usd_balance.innerHTML = data.usd_balance +" and time is " + data.time;
+      user_navbar_eth_balance.innerHTML = data.eth_balance + " (Available:"+ data.available_eth_balance + ")";
+      user_navbar_usd_balance.innerHTML = data.usd_balance + " (Available:"+ data.available_usd_balance + ")";
       console.log("get_userdata : " + status)
       return status.status;
     });
