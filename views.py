@@ -30,6 +30,11 @@ def trade():
     """Trading Interface"""
     return render_template("trade.html")
 
+@app.route("/funding")
+@login_required
+def trade():
+    """Trading Interface"""
+    return render_template("funding.html")
 
 @app.route('/order-history', methods=["GET"])
 @login_required
@@ -115,7 +120,7 @@ def register():
             db.execute("INSERT INTO users (user_id,username,password_hash) VALUES(?,?,?)", fresh_username_id,
                        request.form.get("username"), generate_password_hash(request.form.get("password")))
             session["user_id"] = fresh_username_id
-            
+
             session['logged_in'] = True
             return redirect("/")
 
