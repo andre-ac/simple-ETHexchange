@@ -32,8 +32,8 @@ def trade():
 
 @app.route("/funding")
 @login_required
-def trade():
-    """Trading Interface"""
+def funding():
+    """Funding Interface"""
     return render_template("funding.html")
 
 @app.route('/order-history', methods=["GET"])

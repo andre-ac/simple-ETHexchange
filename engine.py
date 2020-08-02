@@ -86,6 +86,7 @@ def try_execution(order):
                         print(f"Was enough for sell order {order}")
                         orderbook_for_price = db.execute(
                             "SELECT * FROM orderbook WHERE price=:price", price=buy_order["price"])[0]
+                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= buy_order["order_id"])[0]["user_id"]
 
                         if buy_order["quantity_left"] == order_quantity_left:
                             #buy order has the exact same vol as sell order size needed
@@ -97,6 +98,7 @@ def try_execution(order):
                                 "DELETE FROM open_orders WHERE order_id = :orderid", orderid=buy_order["order_id"])
                             db.execute(
                                 "DELETE FROM hidden_orderbook WHERE order_id = :orderid", orderid=buy_order["order_id"])
+
 
                             if orderbook_for_price["quantity"] == buy_order["quantity_left"]:
                                 #the buy order the only order in the price level in public orderbook
@@ -129,7 +131,7 @@ def try_execution(order):
                                    str(uuid.uuid4()), "ETHUSD", buy_order["price"], order_quantity_left, order["order_id"], buy_order["order_id"], int(time.time()))
 
                         #get info of user from maker order (order that on the other side)
-                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= buy_order["order_id"])
+                        
                         maker_user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = maker_user_id)[0]
 
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
