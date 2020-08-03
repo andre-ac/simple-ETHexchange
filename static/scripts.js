@@ -4,6 +4,7 @@ console.log("script.js loaded")
 window.onload = function(){
   var user_navbar_eth_balance = document.getElementById("user_navbar_eth_balance");
   var user_navbar_usd_balance = document.getElementById("user_navbar_eth_balance");
+  var user_navbar_username = document.getElementById("user_navbar_username");
   var quantityfield = document.getElementById("quantityfield");
   var pricefield = document.getElementById("pricefield");
 }
@@ -11,8 +12,9 @@ window.onload = function(){
 
 function get_userdata(){
 $.get("/api/userinfo",function(data,status){
-      user_navbar_eth_balance.innerHTML = data.eth_balance + " (Available:"+ data.available_eth_balance + ")";
-      user_navbar_usd_balance.innerHTML = data.usd_balance + " (Available:"+ data.available_usd_balance + ")";
+      user_navbar_username.innerHTML = data.username;
+      user_navbar_eth_balance.innerHTML = data.eth_balance + " (Available: "+ data.available_eth_balance + ")";
+      user_navbar_usd_balance.innerHTML = data.usd_balance + " (Available: "+ data.available_usd_balance + ")";
       console.log("get_userdata : " + status)
       return status.status;
     });
@@ -189,7 +191,7 @@ $(document).ready(function(){
   get_userdata()
   setInterval(function(){
     get_userdata()
-  }, 10000);}
+  }, 2000);}
   else {
     console.log("not logged in")
   }

@@ -153,6 +153,9 @@ def try_execution(order):
                         print("wasn't enough for sell order")
                         #buy order wasn't enough
                         add_order_history(buy_order["order_id"],"EXECUTED", buy_order["price"])
+                        
+                        #get info of user from maker order (order that on the other side)
+                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= buy_order["order_id"])[0]["user_id"]
 
                         db.execute(
                             "DELETE FROM hidden_orderbook WHERE order_id = :orderid", orderid=buy_order["order_id"])
@@ -183,8 +186,6 @@ def try_execution(order):
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", buy_order["price"], buy_order["quantity_left"], order["order_id"], buy_order["order_id"], int(time.time()))
                         
-                        #get info of user from maker order (order that on the other side)
-                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= buy_order["order_id"])
                         maker_user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = maker_user_id)[0]
 
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
@@ -239,6 +240,9 @@ def try_execution(order):
 
                         orderbook_for_price = db.execute(
                             "SELECT * FROM orderbook WHERE price=:price AND pair=:pair", price=sell_order["price"], pair=sell_order["pair"])[0]
+                        
+                        #get info of user from maker order (order that on the other side)
+                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= sell_order["order_id"])[0]["user_id"]
 
                         if sell_order["quantity_left"] == order_quantity_left:
                             #sell order has the exact same vol as buy order size needed
@@ -277,8 +281,6 @@ def try_execution(order):
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", sell_order["price"], order_quantity_left, order["order_id"], sell_order["order_id"], int(time.time()))
 
-                        #get info of user from maker order (order that on the other side)
-                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= buy_order["order_id"])
                         maker_user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = maker_user_id)[0]
 
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
@@ -298,6 +300,9 @@ def try_execution(order):
                         print("wasn't enough for buy order")
 
                         add_order_history(sell_order["order_id"],"EXECUTED",sell_order["price"])
+                        
+                        #get info of user from maker order (order that on the other side)
+                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= sell_order["order_id"])[0]["user_id"]
 
                         db.execute(
                             "DELETE FROM hidden_orderbook WHERE order_id = :orderid", orderid=sell_order["order_id"])
@@ -325,8 +330,6 @@ def try_execution(order):
                         db.execute("INSERT INTO trade_history (trade_id,pair,price,quantity,taker_order,maker_order,time) VALUES (?,?,?,?,?,?,?)",
                                    str(uuid.uuid4()), "ETHUSD", sell_order["price"], round(sell_order["quantity_left"],2), order["order_id"], sell_order["order_id"], int(time.time()))
                         
-                        #get info of user from maker order (order that on the other side)
-                        maker_user_id = db.execute("SELECT user_id FROM hidden_orderbook WHERE order_id = :order_id", order_id= buy_order["order_id"])
                         maker_user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = maker_user_id)[0]
 
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
