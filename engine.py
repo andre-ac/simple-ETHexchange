@@ -143,7 +143,7 @@ def try_execution(order):
                         #HERE need to use join on the maker order id and get the user id of the other side in order to do balance changes
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
                                     usd_balance=round(user_info["usd_balance"]+(order_quantity_left*buy_order["price"]),2),eth_balance=round(user_info["eth_balance"]-order_quantity_left,2),
-                                    available_usd_balance=round(user_info["available_usd_balance"]+(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]-order_quantity_left,2),user_id=session["user_id"])
+                                    available_usd_balance=round(user_info["available_usd_balance"]+(order_quantity_left*buy_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"],2),user_id=session["user_id"])
                         
                         order_quantity_left = 0
 
@@ -290,7 +290,7 @@ def try_execution(order):
                         user_info = db.execute("SELECT * FROM users WHERE user_id = :user_id", user_id = session["user_id"])[0]
                         db.execute("UPDATE users SET usd_balance = :usd_balance, eth_balance = :eth_balance, available_usd_balance = :available_usd_balance, available_eth_balance = :available_eth_balance WHERE user_id = :user_id",
                                     usd_balance=round(user_info["usd_balance"]-(order_quantity_left*sell_order["price"]),2),eth_balance=round(user_info["eth_balance"]+order_quantity_left,2),
-                                    available_usd_balance=round(user_info["available_usd_balance"]-(order_quantity_left*sell_order["price"]),2),available_eth_balance=round(user_info["available_eth_balance"]+order_quantity_left,2),user_id=session["user_id"])
+                                    available_usd_balance=round(user_info["available_usd_balance"],2),available_eth_balance=round(user_info["available_eth_balance"]+order_quantity_left,2),user_id=session["user_id"])
 
                         order_quantity_left = 0
 

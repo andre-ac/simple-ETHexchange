@@ -1,2 +1,0 @@
--Credited and debit from balances when orders are executed, this is probably best to be associated with trade history (when a new entry is made for trade history a new balance change is made)
--Sanitize balance changes queries with round(,2)
