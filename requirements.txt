@@ -1,4 +1,4 @@
-﻿aniso8601==8.0.0
+aniso8601==8.0.0
 appdirs==1.4.3
 astroid==2.4.0
 certifi==2022.12.7
@@ -31,7 +31,7 @@ pytz==2020.1
 requests==2.23.0
 six==1.14.0
 SQLAlchemy==1.3.16
-sqlparse==0.3.1
+sqlparse==0.4.4
 termcolor==1.1.0
 toml==0.10.0
 urllib3==1.26.5
