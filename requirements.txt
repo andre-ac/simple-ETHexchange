@@ -1,4 +1,4 @@
-﻿aniso8601==8.0.0
+aniso8601==8.0.0
 appdirs==1.4.3
 astroid==2.4.0
 certifi==2022.12.7
@@ -10,7 +10,7 @@ distlib==0.3.0
 dominate==2.5.1
 export==0.1.2
 filelock==3.0.12
-Flask==1.1.2
+Flask==2.3.2
 Flask-Bootstrap==3.3.7.1
 Flask-HTTPAuth==4.0.0
 Flask-Limiter==1.4
