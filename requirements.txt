@@ -28,7 +28,7 @@ pylint==2.5.0
 python-engineio==3.13.0
 python-socketio==4.6.0
 pytz==2020.1
-requests==2.31.0
+requests==2.32.0
 six==1.14.0
 SQLAlchemy==1.3.16
 sqlparse==0.4.4
