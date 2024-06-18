@@ -34,7 +34,7 @@ SQLAlchemy==1.3.16
 sqlparse==0.4.4
 termcolor==1.1.0
 toml==0.10.0
-urllib3==1.26.18
+urllib3==1.26.19
 uuid==1.30
 virtualenv==20.0.18
 visitor==0.1.3
