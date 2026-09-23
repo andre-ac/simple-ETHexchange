@@ -425,15 +425,16 @@ def del_order_orderbook(order_id):
         "DELETE FROM hidden_orderbook WHERE order_id = :order_id", order_id=order_id)
 
     orderbook_for_price = db.execute(
-        "SELECT * FROM orderbook WHERE price = :price AND type= :type", price=order["price"], type=order["type"])[0]
+        "SELECT * FROM orderbook WHERE pair = :pair AND price = :price AND type = :type",
+        pair=order["pair"], price=order["price"], type=order["type"])[0]
     quantity_left = order["quantity"]-order["filled"]
 
     if quantity_left < orderbook_for_price["quantity"]:
         db.execute("UPDATE orderbook SET quantity = :quantity WHERE pair = :pair AND price = :price AND type = :type",
                    quantity=orderbook_for_price["quantity"]-quantity_left, pair=order["pair"], price=order["price"], type=order["type"])
     else:
-        db.execute("DELETE FROM orderbook WHERE price=:price",
-                   price=order["price"])
+        db.execute("DELETE FROM orderbook WHERE pair=:pair AND price=:price AND type=:type",
+                   pair=order["pair"], price=order["price"], type=order["type"])
 
 
 def orderbook_sync():

@@ -5,6 +5,7 @@ import time
 import datetime
 import flask
 import sqlite3
+import math
 
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
@@ -32,23 +33,31 @@ def sendorder():
     if request.method == "POST":
         new_order_id = str(uuid.uuid4())
         pair = request.form.get("pair")
-        price = float(request.form.get("price"))
-        quantity = float(request.form.get("quantity"))
+        try:
+            price = float(request.form.get("price"))
+            quantity = float(request.form.get("quantity"))
+        except (TypeError, ValueError):
+            return jsonify(result="invalid price or quantity"), 400
         type = request.form.get("type")
+        ordertype = request.form.get("ordertype")
+        if (pair != "ETHUSD" or type not in ("B", "S") or ordertype != "L"
+                or not math.isfinite(price) or not math.isfinite(quantity)
+                or price <= 0 or quantity <= 0
+                or round(price, 1) != price or round(quantity, 2) != quantity):
+            return jsonify(result="invalid order"), 400
         user_balances = db.execute(
             "SELECT available_eth_balance,available_usd_balance FROM users WHERE user_id = :id", id=session["user_id"])[0]
-        ordertype = request.form.get("ordertype")
         filled = 0
         time_requested = int(time.time())
         if type == "S":
-            if quantity >= round(float(user_balances["available_eth_balance"]),2):
+            if quantity > round(float(user_balances["available_eth_balance"]),2):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
                 db.execute("UPDATE users SET available_eth_balance = :new_available_balance WHERE user_id=:id",
                             new_available_balance = round(user_balances["available_eth_balance"]-(quantity),2), id=session["user_id"])
                 pass 
         else:
-            if round((quantity*price),2) >= round(float(user_balances["available_usd_balance"]),2):
+            if round((quantity*price),2) > round(float(user_balances["available_usd_balance"]),2):
                 return jsonify(result="not enough balances", time=time_requested, pair=pair, price=price, quantity=quantity), 400
             else:
                 db.execute("UPDATE users SET available_usd_balance = :new_available_balance WHERE user_id=:id",
@@ -61,10 +70,14 @@ def sendorder():
 
     elif request.method == "DELETE":
         orderid = request.form.get("order_id")
+        orders = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid AND user_id = :userid",
+                            orderid=orderid, userid=session["user_id"])
+        if not orders:
+            return jsonify(result="order not found"), 404
+        order_details = orders[0]
         add_order_history(orderid,"CANCELLED")
         user_balances = db.execute(
             "SELECT available_eth_balance,available_usd_balance FROM users WHERE user_id = :id", id=session["user_id"])[0]
-        order_details = db.execute("SELECT * FROM open_orders WHERE order_id = :orderid", orderid=orderid)[0]
         if order_details["type"] == "S":
             db.execute("UPDATE users SET available_eth_balance = :new_available_balance WHERE user_id=:id",
                         new_available_balance = round(user_balances["available_eth_balance"]+order_details["quantity"]-order_details["filled"],2), id=session["user_id"])

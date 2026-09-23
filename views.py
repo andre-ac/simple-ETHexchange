@@ -60,7 +60,7 @@ def login():
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("login.html", alert_error="must provide username")
+            return render_template("login.html", alert_error="must provide password")
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = :username",
                           username=request.form.get("username"))
@@ -111,15 +111,13 @@ def register():
         rows = db.execute("SELECT * FROM users WHERE username = :username",
                           username=request.form.get("username"))
 
-        # assign username id based on number of rows (users) + 1
-        fresh_username_id = len(db.execute("SELECT * FROM users"))+1
-
         # ensures username doesn't exist
         if len(rows) == 0:
             # inserts
-            db.execute("INSERT INTO users (user_id,username,password_hash) VALUES(?,?,?)", fresh_username_id,
+            db.execute("INSERT INTO users (username,password_hash) VALUES(?,?)",
                        request.form.get("username"), generate_password_hash(request.form.get("password")))
-            session["user_id"] = fresh_username_id
+            session["user_id"] = db.execute("SELECT user_id FROM users WHERE username = :username",
+                                            username=request.form.get("username"))[0]["user_id"]
 
             session['logged_in'] = True
             return redirect("/")
